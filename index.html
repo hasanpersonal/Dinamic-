@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Media Feed</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>My Media Feed</h1>
+    <div style="display: flex; gap: 10px;">
+      <button onclick="location.reload()" class="btn refresh-btn">🔄 Refresh</button>
+      <a href="admin.html" class="btn admin-btn">Admin Panel</a>
+    </div>
+  </header>
+
+  <main id="feed-container">
+    <p class="loading">Loading posts...</p>
+  </main>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApS9a6cxv7O0LMARD7IKOr-WEQAtlq9fI",
+      authDomain: "mydata-81da6.firebaseapp.com",
+      projectId: "mydata-81da6",
+      storageBucket: "mydata-81da6.firebasestorage.app",
+      messagingSenderId: "577099961634",
+      appId: "1:577099961634:web:7a37609ea325d67146417b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const feedContainer = document.getElementById('feed-container');
+
+    async function loadPosts() {
+      feedContainer.innerHTML = "";
+      try {
+        const querySnapshot = await getDocs(collection(db, "posts"));
+        if(querySnapshot.empty) {
+          feedContainer.innerHTML = "<p class='loading'>No posts available. Upload from Admin Panel.</p>";
+          return;
+        }
+
+        const posts = [];
+        querySnapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
+        posts.sort((a, b) => b.createdAt - a.createdAt); // নতুন পোস্ট আগে দেখাবে
+
+        posts.forEach(post => {
+          const postCard = document.createElement('div');
+          postCard.className = 'post-card';
+
+          let mediaHtml = "";
+          if (post.fileType && post.fileType.startsWith('image/')) {
+            mediaHtml = `<img src="${post.fileUrl}" alt="Post Image">`;
+          } else if (post.fileType && post.fileType.startsWith('video/')) {
+            mediaHtml = `<video src="${post.fileUrl}" controls></video>`;
+          } else {
+            // Fallback if fileType is missing but it's an image URL
+            mediaHtml = `<img src="${post.fileUrl}" alt="Post Image">`;
+          }
+
+          let commentsHtml = post.comments ? post.comments.map(c => `<li>${c}</li>`).join('') : '';
+          let likesCount = post.likes || 0;
+
+          postCard.innerHTML = `
+            ${mediaHtml}
+            <div class="post-info">
+              <p class="caption">${post.caption || ''}</p>
+              <div class="actions">
+                <button class="like-btn" data-id="${post.id}">❤️ Like (<span id="like-count-${post.id}">${likesCount}</span>)</button>
+              </div>
+              <div class="comment-section">
+                <h4>Comments:</h4>
+                <ul id="comment-list-${post.id}">${commentsHtml}</ul>
+                <div class="comment-input-box">
+                  <input type="text" id="input-${post.id}" placeholder="Write a comment...">
+                  <button class="submit-comment-btn" data-id="${post.id}">Send</button>
+                </div>
+              </div>
+            </div>
+          `;
+          feedContainer.appendChild(postCard);
+        });
+
+        // Like Button Logic
+        document.querySelectorAll('.like-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const id = btn.getAttribute('data-id');
+            const currentLikes = parseInt(document.getElementById(`like-count-${id}`).innerText);
+            document.getElementById(`like-count-${id}`).innerText = currentLikes + 1; 
+            await updateDoc(doc(db, "posts", id), { likes: currentLikes + 1 });
+          });
+        });
+
+        // Comment Submit Logic
+        document.querySelectorAll('.submit-comment-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const id = btn.getAttribute('data-id');
+            const input = document.getElementById(`input-${id}`);
+            if (input.value.trim() !== "") {
+              const commentText = input.value.trim();
+              const li = document.createElement('li');
+              li.innerText = commentText;
+              document.getElementById(`comment-list-${id}`).appendChild(li);
+              input.value = "";
+              await updateDoc(doc(db, "posts", id), {
+                comments: arrayUnion(commentText)
+              });
+            }
+          });
+        });
+
+      } catch (error) {
+        feedContainer.innerHTML = "<p class='loading'>Error loading posts. Check database rules.</p>";
+        console.error(error);
+      }
+    }
+
+    loadPosts();
+  </script>
+</body>
+</html>
