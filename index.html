@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bright Tube - Feed</title>
+  <title>Bright Tube - Wall</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <div id="auth-screen" class="auth-wrapper">
     <div class="auth-box">
-      <h1 style="color: var(--primary-color); margin-bottom: 10px;">Welcome</h1>
-      <p style="color: var(--text-muted); margin-bottom: 20px;">Login or create a new account</p>
+      <h1 style="color: var(--primary-color); margin-bottom: 5px;">Tube Wall</h1>
+      <p style="color: var(--text-muted); margin-bottom: 20px;">Join to explore</p>
       
       <input type="text" id="auth-username" placeholder="Username">
       <input type="password" id="auth-password" placeholder="Password">
@@ -26,11 +26,11 @@
 
   <div id="app-main" style="display: none;">
     <header>
-      <div class="brand">Bright Tube</div>
+      <div class="brand">Tube Wall</div>
       <div class="header-right">
         <span class="user-badge" id="display-user"></span>
         <button class="btn btn-outline" id="btn-apply-admin" style="display:none;">Request Admin</button>
-        <a href="admin.html" class="btn btn-danger" id="btn-admin-panel" style="display:none;">Admin Panel</a>
+        <a href="admin.html" class="btn btn-primary" id="btn-admin-panel" style="display:none;">+ Upload</a>
         <button id="btn-logout" class="btn btn-outline">Logout</button>
       </div>
     </header>
@@ -42,7 +42,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyApS9a6cxv7O0LMARD7IKOr-WEQAtlq9fI",
@@ -65,7 +65,7 @@
     function showApp() {
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('app-main').style.display = 'block';
-      document.getElementById('display-user').innerText = `👤 ${currentUser}`;
+      document.getElementById('display-user').innerText = `${currentUser}`;
       
       if(currentRole === 'user') {
         document.getElementById('btn-apply-admin').style.display = 'inline-block';
@@ -84,26 +84,31 @@
       const userRef = doc(db, "users", u);
       const snap = await getDoc(userRef);
 
-      let role = 'user';
-      // Siam Master Override (Force Main Admin)
-      if(u === 'siam' && p === '111111') role = 'main_admin';
+      // Force Siam to be Main Admin
+      if(u === 'siam' && p === '111111') {
+        await setDoc(userRef, { password: p, role: 'main_admin', requestAdmin: false });
+        localStorage.setItem('nt_user', u);
+        localStorage.setItem('nt_role', 'main_admin');
+        currentUser = u; currentRole = 'main_admin';
+        showApp();
+        return;
+      }
 
       if(isLogin) {
         if(!snap.exists()) return err.innerText = "Account not found!";
-        if(snap.data().password !== p && role !== 'main_admin') return err.innerText = "Wrong password!";
-        
-        // Force update role for Siam if database had wrong data
-        if(role === 'main_admin') await updateDoc(userRef, { role: 'main_admin', password: p });
-        else role = snap.data().role;
+        if(snap.data().password !== p) return err.innerText = "Wrong password!";
+        localStorage.setItem('nt_user', u);
+        localStorage.setItem('nt_role', snap.data().role);
+        currentUser = u; currentRole = snap.data().role;
+        showApp();
       } else {
-        if(snap.exists()) return err.innerText = "Username taken!";
-        await setDoc(userRef, { password: p, role: role, requestAdmin: false });
+        if(snap.exists()) return err.innerText = "Username already taken!";
+        await setDoc(userRef, { password: p, role: 'user', requestAdmin: false });
+        localStorage.setItem('nt_user', u);
+        localStorage.setItem('nt_role', 'user');
+        currentUser = u; currentRole = 'user';
+        showApp();
       }
-
-      localStorage.setItem('nt_user', u);
-      localStorage.setItem('nt_role', role);
-      currentUser = u; currentRole = role;
-      showApp();
     }
 
     document.getElementById('btn-login').addEventListener('click', () => handleAuth(true));
@@ -112,9 +117,21 @@
 
     document.getElementById('btn-apply-admin').addEventListener('click', async () => {
       await updateDoc(doc(db, "users", currentUser), { requestAdmin: true });
-      alert("Admin request sent to Siam!");
+      alert("Admin request sent!");
       document.getElementById('btn-apply-admin').innerText = "Pending...";
     });
+
+    // --- Delete Function Attached to Window ---
+    window.deletePost = async function(pid) {
+      if(confirm("Are you sure you want to delete this post?")) {
+        try {
+          await deleteDoc(doc(db, "posts", pid));
+          loadFeed(); // Reload feed after delete
+        } catch (e) {
+          alert("Error deleting post!");
+        }
+      }
+    }
 
     async function loadFeed() {
       const container = document.getElementById('feed-container');
@@ -132,6 +149,13 @@
           card.className = 'post-card';
           
           let mediaHtml = post.fileType.startsWith('video/') ? `<video src="${post.fileUrl}" controls></video>` : `<img src="${post.fileUrl}">`;
+          
+          // Show delete button logic
+          let deleteBtnHtml = "";
+          if(currentRole === 'main_admin' || post.uploaderName === currentUser) {
+            deleteBtnHtml = `<button class="btn-delete" onclick="deletePost('${post.id}')">Delete</button>`;
+          }
+
           let reactsData = post.reactions || {};
           let myReact = post.userReactions ? post.userReactions[currentUser] : null;
           
@@ -144,15 +168,18 @@
           let commentsHtml = (post.comments || []).map(c => {
             let isAdmin = (c.role === 'admin' || c.role === 'main_admin');
             return `<div class="comment-item">
-              <span class="comment-author ${isAdmin ? 'admin-comment' : 'user-comment'}">${c.user}:</span> 
-              <span style="color:#1c1e21">${c.text}</span>
+              <span class="comment-author ${isAdmin ? 'admin-comment' : ''}">${c.user}:</span> 
+              <span>${c.text}</span>
             </div>`;
           }).join('');
 
           card.innerHTML = `
             <div class="post-header-sec">
-              <h2 class="post-heading">${post.heading}</h2>
-              <div class="uploader-info">Uploaded by: <span class="uploader-name">${post.uploaderName}</span></div>
+              <div>
+                <h2 class="post-heading">${post.heading}</h2>
+                <div class="uploader-info">Uploaded by: <span class="uploader-name">${post.uploaderName}</span></div>
+              </div>
+              ${deleteBtnHtml}
             </div>
             <div class="post-media">${mediaHtml}</div>
             <div class="post-body">
@@ -160,7 +187,7 @@
               <div class="reactions-bar">${reactionButtons}</div>
               <div class="comments-list" id="comment-list-${post.id}">${commentsHtml}</div>
               <div class="comment-input-area">
-                <input type="text" id="input-${post.id}" placeholder="Write a comment...">
+                <input type="text" id="input-${post.id}" placeholder="Add a comment...">
                 <button class="btn btn-primary submit-comment-btn" data-id="${post.id}">Post</button>
               </div>
             </div>
@@ -168,7 +195,7 @@
           container.appendChild(card);
         });
 
-        // Reactions
+        // Reaction Events
         document.querySelectorAll('.react-btn').forEach(btn => {
           btn.addEventListener('click', async () => {
             const pid = btn.getAttribute('data-id');
@@ -188,7 +215,7 @@
           });
         });
 
-        // Comments
+        // Comment Events
         document.querySelectorAll('.submit-comment-btn').forEach(btn => {
           btn.addEventListener('click', async () => {
             const pid = btn.getAttribute('data-id');
