@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="login-box" class="form-container">
+    <h2>Admin Login</h2>
+    <input type="password" id="admin-password" placeholder="Enter Password (admin123)">
+    <button id="login-btn" class="btn admin-btn">Login</button>
+    <p id="login-error" style="color:red; display:none; margin-top:10px;">Wrong Password!</p>
+    <br><br>
+    <a href="index.html" style="text-decoration: none; color: #1877f2;">← Back to Feed</a>
+  </div>
+
+  <div id="admin-panel" class="form-container" style="display: none;">
+    <h2>Upload New Post</h2>
+    <input type="file" id="file-input" accept="image/*,video/*">
+    <textarea id="caption-input" placeholder="Write a caption..." rows="4"></textarea>
+    <button id="upload-btn" class="btn admin-btn">Upload Post</button>
+    <p id="status" style="margin-top:15px; font-weight:bold;"></p>
+    <br>
+    <a href="index.html" style="text-decoration: none; color: #1877f2;">← Back to Feed</a>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApS9a6cxv7O0LMARD7IKOr-WEQAtlq9fI",
+      authDomain: "mydata-81da6.firebaseapp.com",
+      projectId: "mydata-81da6",
+      storageBucket: "mydata-81da6.firebasestorage.app",
+      messagingSenderId: "577099961634",
+      appId: "1:577099961634:web:7a37609ea325d67146417b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // আপনার ক্লাউডিনারি ডিটেইলস
+    const CLOUD_NAME = "docif5nym"; 
+    const UPLOAD_PRESET = "my_preset"; 
+
+    // Login Logic
+    document.getElementById('login-btn').addEventListener('click', () => {
+      const pass = document.getElementById('admin-password').value;
+      if(pass === "admin123") { 
+        document.getElementById('login-box').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+      }
+    });
+
+    // Upload Logic
+    document.getElementById('upload-btn').addEventListener('click', async () => {
+      const fileInput = document.getElementById('file-input');
+      const captionInput = document.getElementById('caption-input');
+      const status = document.getElementById('status');
+
+      if(fileInput.files.length === 0) {
+        alert("Please select an image or video first!");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      status.style.color = "blue";
+      status.innerText = "Uploading to Cloudinary... Please wait.";
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', UPLOAD_PRESET);
+
+      try {
+        // ১. ক্লাউডিনারিতে আপলোড
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+
+        if(data.secure_url) {
+          status.innerText = "Saving to Database...";
+          
+          // ২. ফায়ারবেসে ডাটা সেভ
+          await addDoc(collection(db, "posts"), {
+            fileUrl: data.secure_url,
+            fileType: file.type,
+            caption: captionInput.value,
+            likes: 0,
+            comments: [],
+            createdAt: Date.now()
+          });
+
+          status.style.color = "green";
+          status.innerText = "Successfully Uploaded! Go to Feed & Refresh.";
+          fileInput.value = "";
+          captionInput.value = "";
+        } else {
+          throw new Error(data.error.message);
+        }
+
+      } catch (error) {
+        status.style.color = "red";
+        status.innerText = "Upload Failed: " + error.message;
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
