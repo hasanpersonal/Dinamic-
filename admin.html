@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NeonTube - Studio</title>
+  <title>Admin Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,20 +15,21 @@
     </div>
   </header>
 
-  <div class="studio-container">
+  <div class="wall-container">
     
-    <div id="main-admin-panel" class="panel-section" style="display: none; border-color: var(--accent-pink);">
-      <h2 style="color: var(--accent-pink); margin-bottom: 15px;">Admin Requests</h2>
+    <div id="main-admin-panel" class="admin-box" style="display: none; border-left: 4px solid var(--admin-color);">
+      <h2 style="color: var(--admin-color); margin-bottom: 15px;">Pending Admin Requests</h2>
       <div id="request-list"><p class="uploader-info">Loading requests...</p></div>
     </div>
 
-    <div class="panel-section">
-      <h2 style="color: var(--accent-cyan); margin-bottom: 15px;">Upload New Content</h2>
-      <input type="text" id="post-heading" class="input-field" placeholder="Enter Post Heading...">
-      <input type="file" id="file-input" class="input-field" accept="image/*,video/*">
-      <textarea id="post-caption" class="input-field" rows="4" placeholder="Write paragraph/caption..."></textarea>
+    <div class="admin-box">
+      <h2 style="color: var(--primary-color); margin-bottom: 15px;">Upload Content</h2>
       
-      <button id="upload-btn" class="btn btn-cyan" style="width: 100%;">Upload to NeonTube</button>
+      <input type="text" id="post-heading" class="input-field" placeholder="Post Heading...">
+      <input type="file" id="file-input" class="input-field" accept="image/*,video/*" style="background: white;">
+      <textarea id="post-caption" class="input-field" rows="4" placeholder="Write Paragraph/Caption..."></textarea>
+      
+      <button id="upload-btn" class="btn btn-primary" style="width: 100%;">Upload Post</button>
       <p id="status" style="margin-top: 15px; text-align: center; font-weight: bold;"></p>
     </div>
 
@@ -53,18 +54,16 @@
     const currentUser = localStorage.getItem('nt_user');
     const currentRole = localStorage.getItem('nt_role');
 
-    // Authentication Check
     if(!currentUser || currentRole === 'user') {
-      document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px; color:red;'>Access Denied! You are not an admin.</h1>";
+      document.body.innerHTML = "<h2 style='text-align:center; padding: 50px; color:red;'>Access Denied! Go back to Feed.</h2>";
     }
 
-    // Main Admin Features
     if(currentRole === 'main_admin') {
       document.getElementById('main-admin-panel').style.display = 'block';
-      loadAdminRequests();
+      loadRequests();
     }
 
-    async function loadAdminRequests() {
+    async function loadRequests() {
       const list = document.getElementById('request-list');
       const snap = await getDocs(collection(db, "users"));
       list.innerHTML = "";
@@ -75,23 +74,23 @@
         if(u.requestAdmin === true && u.role === 'user') {
           found = true;
           list.innerHTML += `
-            <div class="admin-list-item" style="align-items:center;">
-              <span><strong>${uDoc.id}</strong> wants to be an admin.</span>
-              <button class="btn btn-cyan" onclick="approveAdmin('${uDoc.id}')">Approve</button>
+            <div class="admin-list-item">
+              <span><strong>${uDoc.id}</strong> wants to be an Admin.</span>
+              <button class="btn btn-primary" onclick="approveAdmin('${uDoc.id}')">Approve</button>
             </div>
           `;
         }
       });
-      if(!found) list.innerHTML = "<p style='color:gray;'>No pending requests.</p>";
+      if(!found) list.innerHTML = "<p style='color:var(--text-muted);'>No pending requests.</p>";
     }
 
     window.approveAdmin = async function(username) {
       await updateDoc(doc(db, "users", username), { role: 'admin', requestAdmin: false });
       alert(`${username} is now an Admin!`);
-      loadAdminRequests();
+      loadRequests();
     }
 
-    // Upload Logic
+    // Cloudinary Upload
     const CLOUD_NAME = "docif5nym"; 
     const UPLOAD_PRESET = "my_preset"; 
 
@@ -101,13 +100,11 @@
       const fileInput = document.getElementById('file-input');
       const status = document.getElementById('status');
 
-      if(!heading || fileInput.files.length === 0) {
-        return status.innerText = "Heading and File are required!";
-      }
+      if(!heading || fileInput.files.length === 0) return status.innerText = "Heading & File required!";
 
       const file = fileInput.files[0];
-      status.style.color = "var(--accent-cyan)";
-      status.innerText = "Uploading to Server...";
+      status.style.color = "var(--primary-color)";
+      status.innerText = "Uploading... Please wait.";
 
       const formData = new FormData();
       formData.append('file', file);
@@ -118,7 +115,7 @@
         const data = await response.json();
 
         if(data.secure_url) {
-          status.innerText = "Saving data...";
+          status.innerText = "Saving to Database...";
           await addDoc(collection(db, "posts"), {
             heading: heading,
             caption: caption,
@@ -131,14 +128,14 @@
             createdAt: Date.now()
           });
 
-          status.style.color = "#22c55e";
-          status.innerText = "Upload Successful!";
+          status.style.color = "green";
+          status.innerText = "Uploaded Successfully!";
           document.getElementById('post-heading').value = "";
           document.getElementById('post-caption').value = "";
           fileInput.value = "";
         }
       } catch (e) {
-        status.style.color = "#ef4444";
+        status.style.color = "red";
         status.innerText = "Upload Failed!";
       }
     });
