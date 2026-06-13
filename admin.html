@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
+  <title>Admin Dashboard - Tube Wall</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,20 +17,22 @@
 
   <div class="wall-container">
     
-    <div id="main-admin-panel" class="admin-box" style="display: none; border-left: 4px solid var(--admin-color);">
-      <h2 style="color: var(--admin-color); margin-bottom: 15px;">Pending Admin Requests</h2>
+    <div id="main-admin-panel" class="post-card" style="display: none; padding: 20px; border-left: 4px solid var(--admin-color);">
+      <h2 style="color: var(--admin-color); margin-bottom: 15px; font-size: 18px;">Pending Admin Requests</h2>
       <div id="request-list"><p class="uploader-info">Loading requests...</p></div>
     </div>
 
-    <div class="admin-box">
-      <h2 style="color: var(--primary-color); margin-bottom: 15px;">Upload Content</h2>
+    <div class="post-card" style="padding: 20px;">
+      <h2 style="color: var(--primary-color); margin-bottom: 20px; font-size: 18px;">Upload Content</h2>
       
-      <input type="text" id="post-heading" class="input-field" placeholder="Post Heading...">
-      <input type="file" id="file-input" class="input-field" accept="image/*,video/*" style="background: white;">
-      <textarea id="post-caption" class="input-field" rows="4" placeholder="Write Paragraph/Caption..."></textarea>
+      <input type="text" id="post-heading" placeholder="Post Heading..." style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 14px; background: #f9fafb;">
       
-      <button id="upload-btn" class="btn btn-primary" style="width: 100%;">Upload Post</button>
-      <p id="status" style="margin-top: 15px; text-align: center; font-weight: bold;"></p>
+      <input type="file" id="file-input" accept="image/*,video/*" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px dashed #ccc; border-radius: 8px; outline: none; font-size: 14px; background: white; cursor: pointer;">
+      
+      <textarea id="post-caption" rows="4" placeholder="Write Paragraph/Caption..." style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 14px; background: #f9fafb; resize: vertical;"></textarea>
+      
+      <button id="upload-btn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 15px;">Upload Post</button>
+      <p id="status" style="margin-top: 15px; text-align: center; font-weight: 600; font-size: 14px;"></p>
     </div>
 
   </div>
@@ -74,14 +76,14 @@
         if(u.requestAdmin === true && u.role === 'user') {
           found = true;
           list.innerHTML += `
-            <div class="admin-list-item">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 14px;">
               <span><strong>${uDoc.id}</strong> wants to be an Admin.</span>
-              <button class="btn btn-primary" onclick="approveAdmin('${uDoc.id}')">Approve</button>
+              <button class="btn btn-primary" style="padding: 6px 12px;" onclick="approveAdmin('${uDoc.id}')">Approve</button>
             </div>
           `;
         }
       });
-      if(!found) list.innerHTML = "<p style='color:var(--text-muted);'>No pending requests.</p>";
+      if(!found) list.innerHTML = "<p style='color:var(--text-muted); font-size: 14px;'>No pending requests.</p>";
     }
 
     window.approveAdmin = async function(username) {
