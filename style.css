@@ -1,0 +1,172 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+header {
+  background-color: #fff;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+h1 {
+  font-size: 20px;
+  color: #1877f2;
+}
+
+.btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.refresh-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.admin-btn {
+  background-color: #1877f2;
+  color: white;
+}
+
+main {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 0 10px;
+}
+
+.loading {
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+  margin-top: 50px;
+}
+
+.post-card {
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.post-card img, .post-card video {
+  width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  background-color: #000;
+}
+
+.post-info {
+  padding: 15px;
+}
+
+.caption {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.actions {
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0;
+  margin-bottom: 15px;
+}
+
+.like-btn {
+  background: none;
+  border: none;
+  color: #606770;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.like-btn:hover {
+  color: #1877f2;
+}
+
+.comment-section h4 {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #606770;
+}
+
+.comment-section ul {
+  list-style: none;
+  margin-bottom: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.comment-section li {
+  background: #f0f2f5;
+  padding: 8px 12px;
+  border-radius: 15px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  display: inline-block;
+  clear: both;
+  width: fit-content;
+}
+
+.comment-input-box {
+  display: flex;
+  gap: 10px;
+}
+
+.comment-input-box input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  outline: none;
+}
+
+.submit-comment-btn {
+  background-color: #1877f2;
+  color: white;
+  border: none;
+  padding: 0 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.form-container {
+  max-width: 400px;
+  margin: 50px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.form-container input[type="file"],
+.form-container input[type="password"],
+.form-container textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 15px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
