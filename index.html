@@ -3,48 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NeonTube - Feed</title>
+  <title>Bright Tube - Feed</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div id="auth-screen">
+  <div id="auth-screen" class="auth-wrapper">
     <div class="auth-box">
-      <h1>NeonTube</h1>
-      <p style="margin-bottom: 20px; color: #94a3b8;">Login or Register to continue</p>
-      <input type="text" id="auth-username" placeholder="Username (no spaces)">
+      <h1 style="color: var(--primary-color); margin-bottom: 10px;">Welcome</h1>
+      <p style="color: var(--text-muted); margin-bottom: 20px;">Login or create a new account</p>
+      
+      <input type="text" id="auth-username" placeholder="Username">
       <input type="password" id="auth-password" placeholder="Password">
-      <div class="auth-btns">
-        <button id="btn-login" class="btn btn-outline">Login</button>
-        <button id="btn-register" class="btn btn-cyan">Create Account</button>
+      
+      <div style="display: flex; gap: 10px; flex-direction: column;">
+        <button id="btn-login" class="btn btn-primary">Login</button>
+        <button id="btn-register" class="btn btn-outline">Create Account</button>
       </div>
-      <p id="auth-error" class="error-msg"></p>
+      <p id="auth-error" style="color: red; margin-top: 15px; font-size: 14px;"></p>
     </div>
   </div>
 
   <div id="app-main" style="display: none;">
     <header>
-      <div class="brand">NeonTube</div>
+      <div class="brand">Bright Tube</div>
       <div class="header-right">
         <span class="user-badge" id="display-user"></span>
-        <button class="btn btn-outline" onclick="document.getElementById('admin-list-modal').style.display='flex'">Admin List</button>
-        <button class="btn btn-cyan" id="btn-apply-admin" style="display:none;">Be an Admin</button>
-        <a href="admin.html" class="btn btn-pink" id="btn-admin-panel" style="display:none;">Studio</a>
-        <button id="btn-logout" class="btn">Logout</button>
+        <button class="btn btn-outline" id="btn-apply-admin" style="display:none;">Request Admin</button>
+        <a href="admin.html" class="btn btn-danger" id="btn-admin-panel" style="display:none;">Admin Panel</a>
+        <button id="btn-logout" class="btn btn-outline">Logout</button>
       </div>
     </header>
 
-    <main id="feed-container">
-      <p style="text-align: center;">Loading Neon Feed...</p>
+    <main class="wall-container" id="feed-container">
+      <p style="text-align: center; padding: 20px;">Loading posts...</p>
     </main>
-  </div>
-
-  <div id="admin-list-modal" class="modal">
-    <div class="modal-content">
-      <h2 style="color: var(--accent-cyan); margin-bottom: 15px;">Official Admins</h2>
-      <div id="admin-list-container">Loading...</div>
-      <button class="btn btn-outline" style="margin-top: 15px; width: 100%;" onclick="document.getElementById('admin-list-modal').style.display='none'">Close</button>
-    </div>
   </div>
 
   <script type="module">
@@ -63,92 +56,72 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Emojis list
     const EMOJIS = ['👍', '❤️', '😂', '😲', '😢'];
-
     let currentUser = localStorage.getItem('nt_user');
     let currentRole = localStorage.getItem('nt_role');
 
-    const authScreen = document.getElementById('auth-screen');
-    const appMain = document.getElementById('app-main');
-    const errorMsg = document.getElementById('auth-error');
-
-    // Init Logic
-    if (currentUser && currentRole) {
-      showApp();
-    }
+    if (currentUser && currentRole) showApp();
 
     function showApp() {
-      authScreen.style.display = 'none';
-      appMain.style.display = 'block';
-      document.getElementById('display-user').innerText = currentUser;
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app-main').style.display = 'block';
+      document.getElementById('display-user').innerText = `👤 ${currentUser}`;
       
       if(currentRole === 'user') {
-        document.getElementById('btn-apply-admin').style.display = 'block';
+        document.getElementById('btn-apply-admin').style.display = 'inline-block';
       } else {
-        document.getElementById('btn-admin-panel').style.display = 'block';
+        document.getElementById('btn-admin-panel').style.display = 'inline-block';
       }
       loadFeed();
-      loadAdminList();
     }
 
-    // --- Authentication System ---
-    document.getElementById('btn-register').addEventListener('click', async () => {
+    async function handleAuth(isLogin) {
       const u = document.getElementById('auth-username').value.trim();
       const p = document.getElementById('auth-password').value.trim();
-      if(!u || !p) return errorMsg.innerText = "Enter username and password!";
+      const err = document.getElementById('auth-error');
+      if(!u || !p) return err.innerText = "Username & Password required!";
       
       const userRef = doc(db, "users", u);
       const snap = await getDoc(userRef);
-      if(snap.exists()) return errorMsg.innerText = "Username already exists! Try logging in.";
 
-      // Check main admin condition
       let role = 'user';
-      if(u === 'imrul' && p === '123456') role = 'main_admin';
+      // Siam Master Override (Force Main Admin)
+      if(u === 'siam' && p === '111111') role = 'main_admin';
 
-      await setDoc(userRef, { password: p, role: role, requestAdmin: false });
+      if(isLogin) {
+        if(!snap.exists()) return err.innerText = "Account not found!";
+        if(snap.data().password !== p && role !== 'main_admin') return err.innerText = "Wrong password!";
+        
+        // Force update role for Siam if database had wrong data
+        if(role === 'main_admin') await updateDoc(userRef, { role: 'main_admin', password: p });
+        else role = snap.data().role;
+      } else {
+        if(snap.exists()) return err.innerText = "Username taken!";
+        await setDoc(userRef, { password: p, role: role, requestAdmin: false });
+      }
+
       localStorage.setItem('nt_user', u);
       localStorage.setItem('nt_role', role);
       currentUser = u; currentRole = role;
       showApp();
-    });
+    }
 
-    document.getElementById('btn-login').addEventListener('click', async () => {
-      const u = document.getElementById('auth-username').value.trim();
-      const p = document.getElementById('auth-password').value.trim();
-      if(!u || !p) return errorMsg.innerText = "Enter username and password!";
-      
-      const userRef = doc(db, "users", u);
-      const snap = await getDoc(userRef);
-      if(!snap.exists()) return errorMsg.innerText = "Account not found. Create one!";
-      
-      const data = snap.data();
-      if(data.password !== p) return errorMsg.innerText = "Wrong password!";
-      
-      localStorage.setItem('nt_user', u);
-      localStorage.setItem('nt_role', data.role);
-      currentUser = u; currentRole = data.role;
-      showApp();
-    });
+    document.getElementById('btn-login').addEventListener('click', () => handleAuth(true));
+    document.getElementById('btn-register').addEventListener('click', () => handleAuth(false));
+    document.getElementById('btn-logout').addEventListener('click', () => { localStorage.clear(); location.reload(); });
 
-    document.getElementById('btn-logout').addEventListener('click', () => {
-      localStorage.clear(); location.reload();
-    });
-
-    // Apply for Admin
     document.getElementById('btn-apply-admin').addEventListener('click', async () => {
       await updateDoc(doc(db, "users", currentUser), { requestAdmin: true });
-      alert("Admin request sent to Imrul (Main Admin)!");
-      document.getElementById('btn-apply-admin').innerText = "Request Pending...";
+      alert("Admin request sent to Siam!");
+      document.getElementById('btn-apply-admin').innerText = "Pending...";
     });
 
-    // --- Feed Logic ---
     async function loadFeed() {
-      const feedContainer = document.getElementById('feed-container');
+      const container = document.getElementById('feed-container');
       try {
         const querySnapshot = await getDocs(collection(db, "posts"));
-        feedContainer.innerHTML = "";
-        if(querySnapshot.empty) { feedContainer.innerHTML = "<p>No posts yet.</p>"; return; }
+        container.innerHTML = "";
+        if(querySnapshot.empty) return container.innerHTML = "<p style='text-align:center;'>No posts found.</p>";
 
         const posts = [];
         querySnapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
@@ -157,10 +130,8 @@
         posts.forEach(post => {
           const card = document.createElement('div');
           card.className = 'post-card';
-
+          
           let mediaHtml = post.fileType.startsWith('video/') ? `<video src="${post.fileUrl}" controls></video>` : `<img src="${post.fileUrl}">`;
-
-          // Format Reactions
           let reactsData = post.reactions || {};
           let myReact = post.userReactions ? post.userReactions[currentUser] : null;
           
@@ -170,63 +141,54 @@
             return `<button class="react-btn ${isActive}" data-id="${post.id}" data-emoji="${emj}">${emj} <span>${count}</span></button>`;
           }).join('');
 
-          // Format Comments (Color coded by role)
           let commentsHtml = (post.comments || []).map(c => {
-            let colorClass = (c.role === 'admin' || c.role === 'main_admin') ? 'admin-comment' : 'user-comment';
-            return `<div class="comment-item"><span class="comment-author ${colorClass}">${c.user}:</span> <span class="user-comment">${c.text}</span></div>`;
+            let isAdmin = (c.role === 'admin' || c.role === 'main_admin');
+            return `<div class="comment-item">
+              <span class="comment-author ${isAdmin ? 'admin-comment' : 'user-comment'}">${c.user}:</span> 
+              <span style="color:#1c1e21">${c.text}</span>
+            </div>`;
           }).join('');
 
           card.innerHTML = `
-            <h2 class="post-heading">${post.heading}</h2>
+            <div class="post-header-sec">
+              <h2 class="post-heading">${post.heading}</h2>
+              <div class="uploader-info">Uploaded by: <span class="uploader-name">${post.uploaderName}</span></div>
+            </div>
             <div class="post-media">${mediaHtml}</div>
-            <p class="post-caption">${post.caption}</p>
-            <div class="uploader-info">Uploaded by: <span class="uploader-name">${post.uploaderName}</span></div>
-            
-            <div class="reactions-bar" id="react-bar-${post.id}">${reactionButtons}</div>
-            
-            <div class="comments-section">
+            <div class="post-body">
+              <p class="post-caption">${post.caption}</p>
+              <div class="reactions-bar">${reactionButtons}</div>
               <div class="comments-list" id="comment-list-${post.id}">${commentsHtml}</div>
               <div class="comment-input-area">
                 <input type="text" id="input-${post.id}" placeholder="Write a comment...">
-                <button class="btn btn-cyan submit-comment-btn" data-id="${post.id}">Post</button>
+                <button class="btn btn-primary submit-comment-btn" data-id="${post.id}">Post</button>
               </div>
             </div>
           `;
-          feedContainer.appendChild(card);
+          container.appendChild(card);
         });
 
-        // Reaction Events
+        // Reactions
         document.querySelectorAll('.react-btn').forEach(btn => {
           btn.addEventListener('click', async () => {
             const pid = btn.getAttribute('data-id');
             const emj = btn.getAttribute('data-emoji');
-            
-            // Get post fresh data
             const pRef = doc(db, "posts", pid);
-            const pSnap = await getDoc(pRef);
-            let pData = pSnap.data();
+            const pData = (await getDoc(pRef)).data();
+            
             let uReacts = pData.userReactions || {};
             let rCounts = pData.reactions || { '👍':0, '❤️':0, '😂':0, '😲':0, '😢':0 };
-
             let currentEmj = uReacts[currentUser];
 
-            if(currentEmj === emj) {
-              // Remove react
-              rCounts[emj]--;
-              delete uReacts[currentUser];
-            } else {
-              // Add or Change react
-              if(currentEmj) rCounts[currentEmj]--; // Remove old
-              rCounts[emj] = (rCounts[emj] || 0) + 1; // Add new
-              uReacts[currentUser] = emj;
-            }
+            if(currentEmj === emj) { rCounts[emj]--; delete uReacts[currentUser]; } 
+            else { if(currentEmj) rCounts[currentEmj]--; rCounts[emj] = (rCounts[emj]||0)+1; uReacts[currentUser] = emj; }
 
             await updateDoc(pRef, { reactions: rCounts, userReactions: uReacts });
-            loadFeed(); // Reload to update UI
+            loadFeed();
           });
         });
 
-        // Comment Events
+        // Comments
         document.querySelectorAll('.submit-comment-btn').forEach(btn => {
           btn.addEventListener('click', async () => {
             const pid = btn.getAttribute('data-id');
@@ -235,27 +197,12 @@
               await updateDoc(doc(db, "posts", pid), {
                 comments: arrayUnion({ user: currentUser, role: currentRole, text: input.value.trim() })
               });
-              input.value = "";
               loadFeed();
             }
           });
         });
 
       } catch (err) { console.error(err); }
-    }
-
-    // Load Admin List
-    async function loadAdminList() {
-      const container = document.getElementById('admin-list-container');
-      const usersSnap = await getDocs(collection(db, "users"));
-      container.innerHTML = "";
-      usersSnap.forEach(uDoc => {
-        const u = uDoc.data();
-        if(u.role === 'admin' || u.role === 'main_admin') {
-          let roleTag = u.role === 'main_admin' ? '(Main Admin)' : '(Admin)';
-          container.innerHTML += `<div class="admin-list-item"><span>${uDoc.id}</span> <span style="color:var(--accent-pink);">${roleTag}</span></div>`;
-        }
-      });
     }
   </script>
 </body>
