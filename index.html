@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bright Tube - Wall</title>
+  <title>Hasan's Tube</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <div id="auth-screen" class="auth-wrapper">
     <div class="auth-box">
-      <h1 style="color: var(--primary-color); margin-bottom: 5px;">Tube Wall</h1>
+      <h1 style="color: var(--primary-color); margin-bottom: 5px;">Hasan's Tube</h1>
       <p style="color: var(--text-muted); margin-bottom: 20px;">Join to explore</p>
       
       <input type="text" id="auth-username" placeholder="Username">
@@ -26,7 +26,7 @@
 
   <div id="app-main" style="display: none;">
     <header>
-      <div class="brand">Tube Wall</div>
+      <div class="brand">Content</div>
       <div class="header-right">
         <span class="user-badge" id="display-user"></span>
         <button class="btn btn-outline" id="btn-apply-admin" style="display:none;">Request Admin</button>
@@ -56,7 +56,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const EMOJIS = ['👍', '❤️', '😂', '😲', '😢'];
+    const EMOJIS = ['👍', '❤️', '🔥', '⚡', '🧐'];
     let currentUser = localStorage.getItem('nt_user');
     let currentRole = localStorage.getItem('nt_role');
 
