@@ -3,46 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Premium Media Feed</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>NeonTube - Feed</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div id="name-modal" class="modal-overlay">
-    <div class="modal-box">
-      <h2><i class="fa-solid fa-user-circle"></i> Create Profile</h2>
-      <p>Enter a username to like and comment on posts.</p>
-      <input type="text" id="username-input" placeholder="e.g. John Doe" autocomplete="off">
-      <button id="save-name-btn" class="btn primary-btn">Continue to Feed <i class="fa-solid fa-arrow-right"></i></button>
+  <div id="auth-screen">
+    <div class="auth-box">
+      <h1>NeonTube</h1>
+      <p style="margin-bottom: 20px; color: #94a3b8;">Login or Register to continue</p>
+      <input type="text" id="auth-username" placeholder="Username (no spaces)">
+      <input type="password" id="auth-password" placeholder="Password">
+      <div class="auth-btns">
+        <button id="btn-login" class="btn btn-outline">Login</button>
+        <button id="btn-register" class="btn btn-cyan">Create Account</button>
+      </div>
+      <p id="auth-error" class="error-msg"></p>
     </div>
   </div>
 
-  <header>
-    <div class="header-logo">
-      <i class="fa-solid fa-play-circle logo-icon"></i>
-      <h1>TubeFeed</h1>
-    </div>
-    <div class="header-actions">
-      <div class="user-badge" id="user-display" onclick="openNameModal(true)" title="Change Name">
-        <i class="fa-solid fa-user"></i> <span id="user-name-text">Guest</span>
+  <div id="app-main" style="display: none;">
+    <header>
+      <div class="brand">NeonTube</div>
+      <div class="header-right">
+        <span class="user-badge" id="display-user"></span>
+        <button class="btn btn-outline" onclick="document.getElementById('admin-list-modal').style.display='flex'">Admin List</button>
+        <button class="btn btn-cyan" id="btn-apply-admin" style="display:none;">Be an Admin</button>
+        <a href="admin.html" class="btn btn-pink" id="btn-admin-panel" style="display:none;">Studio</a>
+        <button id="btn-logout" class="btn">Logout</button>
       </div>
-      <button onclick="location.reload()" class="icon-btn" title="Refresh Feed"><i class="fa-solid fa-rotate-right"></i></button>
-      <a href="admin.html" class="icon-btn" title="Admin Panel"><i class="fa-solid fa-gear"></i></a>
-    </div>
-  </header>
+    </header>
 
-  <main id="feed-container">
-    <div class="loader-container">
-      <i class="fa-solid fa-spinner fa-spin loader-icon"></i>
-      <p>Loading premium content...</p>
+    <main id="feed-container">
+      <p style="text-align: center;">Loading Neon Feed...</p>
+    </main>
+  </div>
+
+  <div id="admin-list-modal" class="modal">
+    <div class="modal-content">
+      <h2 style="color: var(--accent-cyan); margin-bottom: 15px;">Official Admins</h2>
+      <div id="admin-list-container">Loading...</div>
+      <button class="btn btn-outline" style="margin-top: 15px; width: 100%;" onclick="document.getElementById('admin-list-modal').style.display='none'">Close</button>
     </div>
-  </main>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyApS9a6cxv7O0LMARD7IKOr-WEQAtlq9fI",
@@ -55,171 +62,201 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const feedContainer = document.getElementById('feed-container');
-    const nameModal = document.getElementById('name-modal');
-    
-    let currentUserName = localStorage.getItem('tube_username');
 
-    // Name Modal Logic
-    window.openNameModal = function(isChange = false) {
-      nameModal.style.display = 'flex';
-      if(isChange && currentUserName) {
-        document.getElementById('username-input').value = currentUserName;
-      }
+    // Emojis list
+    const EMOJIS = ['👍', '❤️', '😂', '😲', '😢'];
+
+    let currentUser = localStorage.getItem('nt_user');
+    let currentRole = localStorage.getItem('nt_role');
+
+    const authScreen = document.getElementById('auth-screen');
+    const appMain = document.getElementById('app-main');
+    const errorMsg = document.getElementById('auth-error');
+
+    // Init Logic
+    if (currentUser && currentRole) {
+      showApp();
     }
 
-    document.getElementById('save-name-btn').addEventListener('click', () => {
-      const inputVal = document.getElementById('username-input').value.trim();
-      if(inputVal) {
-        currentUserName = inputVal;
-        localStorage.setItem('tube_username', currentUserName);
-        document.getElementById('user-name-text').innerText = currentUserName;
-        nameModal.style.display = 'none';
-        location.reload(); // রিলোড দিয়ে নতুন নামের লাইক স্ট্যাটাস আপডেট করা
+    function showApp() {
+      authScreen.style.display = 'none';
+      appMain.style.display = 'block';
+      document.getElementById('display-user').innerText = currentUser;
+      
+      if(currentRole === 'user') {
+        document.getElementById('btn-apply-admin').style.display = 'block';
+      } else {
+        document.getElementById('btn-admin-panel').style.display = 'block';
       }
+      loadFeed();
+      loadAdminList();
+    }
+
+    // --- Authentication System ---
+    document.getElementById('btn-register').addEventListener('click', async () => {
+      const u = document.getElementById('auth-username').value.trim();
+      const p = document.getElementById('auth-password').value.trim();
+      if(!u || !p) return errorMsg.innerText = "Enter username and password!";
+      
+      const userRef = doc(db, "users", u);
+      const snap = await getDoc(userRef);
+      if(snap.exists()) return errorMsg.innerText = "Username already exists! Try logging in.";
+
+      // Check main admin condition
+      let role = 'user';
+      if(u === 'imrul' && p === '123456') role = 'main_admin';
+
+      await setDoc(userRef, { password: p, role: role, requestAdmin: false });
+      localStorage.setItem('nt_user', u);
+      localStorage.setItem('nt_role', role);
+      currentUser = u; currentRole = role;
+      showApp();
     });
 
-    if (!currentUserName) {
-      openNameModal();
-    } else {
-      document.getElementById('user-name-text').innerText = currentUserName;
-    }
+    document.getElementById('btn-login').addEventListener('click', async () => {
+      const u = document.getElementById('auth-username').value.trim();
+      const p = document.getElementById('auth-password').value.trim();
+      if(!u || !p) return errorMsg.innerText = "Enter username and password!";
+      
+      const userRef = doc(db, "users", u);
+      const snap = await getDoc(userRef);
+      if(!snap.exists()) return errorMsg.innerText = "Account not found. Create one!";
+      
+      const data = snap.data();
+      if(data.password !== p) return errorMsg.innerText = "Wrong password!";
+      
+      localStorage.setItem('nt_user', u);
+      localStorage.setItem('nt_role', data.role);
+      currentUser = u; currentRole = data.role;
+      showApp();
+    });
 
-    // Toggle Comments visibility
-    window.toggleComments = function(id) {
-      const section = document.getElementById(`comment-section-${id}`);
-      if(section.style.display === 'none' || section.style.display === '') {
-        section.style.display = 'block';
-      } else {
-        section.style.display = 'none';
-      }
-    }
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      localStorage.clear(); location.reload();
+    });
 
-    async function loadPosts() {
+    // Apply for Admin
+    document.getElementById('btn-apply-admin').addEventListener('click', async () => {
+      await updateDoc(doc(db, "users", currentUser), { requestAdmin: true });
+      alert("Admin request sent to Imrul (Main Admin)!");
+      document.getElementById('btn-apply-admin').innerText = "Request Pending...";
+    });
+
+    // --- Feed Logic ---
+    async function loadFeed() {
+      const feedContainer = document.getElementById('feed-container');
       try {
         const querySnapshot = await getDocs(collection(db, "posts"));
         feedContainer.innerHTML = "";
-        
-        if(querySnapshot.empty) {
-          feedContainer.innerHTML = "<div class='empty-state'><i class='fa-solid fa-video-slash'></i><p>No content available yet.</p></div>";
-          return;
-        }
+        if(querySnapshot.empty) { feedContainer.innerHTML = "<p>No posts yet.</p>"; return; }
 
         const posts = [];
         querySnapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
         posts.sort((a, b) => b.createdAt - a.createdAt);
 
         posts.forEach(post => {
-          const postCard = document.createElement('div');
-          postCard.className = 'post-card';
+          const card = document.createElement('div');
+          card.className = 'post-card';
 
-          let mediaHtml = "";
-          if (post.fileType && post.fileType.startsWith('video/')) {
-            mediaHtml = `<video src="${post.fileUrl}" controls controlsList="nodownload"></video>`;
-          } else {
-            mediaHtml = `<img src="${post.fileUrl}" alt="Post Image">`;
-          }
+          let mediaHtml = post.fileType.startsWith('video/') ? `<video src="${post.fileUrl}" controls></video>` : `<img src="${post.fileUrl}">`;
 
-          let commentsHtml = post.comments ? post.comments.map(c => `
-            <div class="comment-item">
-              <div class="comment-avatar"><i class="fa-solid fa-user"></i></div>
-              <div class="comment-body">
-                <span class="comment-author">${c.name}</span>
-                <span class="comment-text">${c.text}</span>
-              </div>
-            </div>
-          `).join('') : '';
+          // Format Reactions
+          let reactsData = post.reactions || {};
+          let myReact = post.userReactions ? post.userReactions[currentUser] : null;
           
-          const likedUsers = post.likedUsers || [];
-          const hasLiked = currentUserName ? likedUsers.includes(currentUserName) : false;
+          let reactionButtons = EMOJIS.map(emj => {
+            let count = reactsData[emj] || 0;
+            let isActive = myReact === emj ? 'active' : '';
+            return `<button class="react-btn ${isActive}" data-id="${post.id}" data-emoji="${emj}">${emj} <span>${count}</span></button>`;
+          }).join('');
 
-          postCard.innerHTML = `
-            <div class="media-wrapper">
-              ${mediaHtml}
-            </div>
-            <div class="post-details">
-              <h3 class="post-caption">${post.caption || ''}</h3>
-              
-              <div class="action-bar">
-                <button class="action-btn like-btn ${hasLiked ? 'active' : ''}" data-id="${post.id}">
-                  <i class="fa-solid fa-thumbs-up"></i> <span id="like-count-${post.id}">${likedUsers.length}</span>
-                </button>
-                <button class="action-btn" onclick="toggleComments('${post.id}')">
-                  <i class="fa-solid fa-comment"></i> Comments
-                </button>
-              </div>
+          // Format Comments (Color coded by role)
+          let commentsHtml = (post.comments || []).map(c => {
+            let colorClass = (c.role === 'admin' || c.role === 'main_admin') ? 'admin-comment' : 'user-comment';
+            return `<div class="comment-item"><span class="comment-author ${colorClass}">${c.user}:</span> <span class="user-comment">${c.text}</span></div>`;
+          }).join('');
 
-              <div class="comment-section" id="comment-section-${post.id}" style="display: none;">
-                <div class="comments-list" id="comment-list-${post.id}">
-                  ${commentsHtml || '<p class="no-comments">Be the first to comment!</p>'}
-                </div>
-                <div class="comment-input-area">
-                  <input type="text" id="input-${post.id}" placeholder="Add a public comment...">
-                  <button class="send-btn submit-comment-btn" data-id="${post.id}"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
+          card.innerHTML = `
+            <h2 class="post-heading">${post.heading}</h2>
+            <div class="post-media">${mediaHtml}</div>
+            <p class="post-caption">${post.caption}</p>
+            <div class="uploader-info">Uploaded by: <span class="uploader-name">${post.uploaderName}</span></div>
+            
+            <div class="reactions-bar" id="react-bar-${post.id}">${reactionButtons}</div>
+            
+            <div class="comments-section">
+              <div class="comments-list" id="comment-list-${post.id}">${commentsHtml}</div>
+              <div class="comment-input-area">
+                <input type="text" id="input-${post.id}" placeholder="Write a comment...">
+                <button class="btn btn-cyan submit-comment-btn" data-id="${post.id}">Post</button>
               </div>
             </div>
           `;
-          feedContainer.appendChild(postCard);
+          feedContainer.appendChild(card);
         });
 
-        // Like Logic
-        document.querySelectorAll('.like-btn').forEach(btn => {
+        // Reaction Events
+        document.querySelectorAll('.react-btn').forEach(btn => {
           btn.addEventListener('click', async () => {
-            if(!currentUserName) return openNameModal();
-            const id = btn.getAttribute('data-id');
-            const countSpan = document.getElementById(`like-count-${id}`);
-            let currentCount = parseInt(countSpan.innerText);
+            const pid = btn.getAttribute('data-id');
+            const emj = btn.getAttribute('data-emoji');
+            
+            // Get post fresh data
+            const pRef = doc(db, "posts", pid);
+            const pSnap = await getDoc(pRef);
+            let pData = pSnap.data();
+            let uReacts = pData.userReactions || {};
+            let rCounts = pData.reactions || { '👍':0, '❤️':0, '😂':0, '😲':0, '😢':0 };
 
-            if (btn.classList.contains('active')) {
-              btn.classList.remove('active');
-              countSpan.innerText = currentCount - 1;
-              await updateDoc(doc(db, "posts", id), { likedUsers: arrayRemove(currentUserName) });
+            let currentEmj = uReacts[currentUser];
+
+            if(currentEmj === emj) {
+              // Remove react
+              rCounts[emj]--;
+              delete uReacts[currentUser];
             } else {
-              btn.classList.add('active');
-              countSpan.innerText = currentCount + 1;
-              await updateDoc(doc(db, "posts", id), { likedUsers: arrayUnion(currentUserName) });
+              // Add or Change react
+              if(currentEmj) rCounts[currentEmj]--; // Remove old
+              rCounts[emj] = (rCounts[emj] || 0) + 1; // Add new
+              uReacts[currentUser] = emj;
             }
+
+            await updateDoc(pRef, { reactions: rCounts, userReactions: uReacts });
+            loadFeed(); // Reload to update UI
           });
         });
 
-        // Comment Logic
+        // Comment Events
         document.querySelectorAll('.submit-comment-btn').forEach(btn => {
           btn.addEventListener('click', async () => {
-            if(!currentUserName) return openNameModal();
-            const id = btn.getAttribute('data-id');
-            const input = document.getElementById(`input-${id}`);
-            const text = input.value.trim();
-            
-            if (text !== "") {
-              const list = document.getElementById(`comment-list-${id}`);
-              // Remove "Be the first" text if exists
-              if(list.innerHTML.includes('no-comments')) list.innerHTML = ''; 
-
-              const newComment = `
-                <div class="comment-item">
-                  <div class="comment-avatar"><i class="fa-solid fa-user"></i></div>
-                  <div class="comment-body">
-                    <span class="comment-author">${currentUserName}</span>
-                    <span class="comment-text">${text}</span>
-                  </div>
-                </div>`;
-              list.insertAdjacentHTML('beforeend', newComment);
-              input.value = "";
-
-              await updateDoc(doc(db, "posts", id), {
-                comments: arrayUnion({ name: currentUserName, text: text })
+            const pid = btn.getAttribute('data-id');
+            const input = document.getElementById(`input-${pid}`);
+            if(input.value.trim() !== "") {
+              await updateDoc(doc(db, "posts", pid), {
+                comments: arrayUnion({ user: currentUser, role: currentRole, text: input.value.trim() })
               });
+              input.value = "";
+              loadFeed();
             }
           });
         });
 
-      } catch (error) {
-        feedContainer.innerHTML = `<div class='empty-state'><i class='fa-solid fa-triangle-exclamation'></i><p>Connection Error!</p></div>`;
-      }
+      } catch (err) { console.error(err); }
     }
 
-    loadPosts();
+    // Load Admin List
+    async function loadAdminList() {
+      const container = document.getElementById('admin-list-container');
+      const usersSnap = await getDocs(collection(db, "users"));
+      container.innerHTML = "";
+      usersSnap.forEach(uDoc => {
+        const u = uDoc.data();
+        if(u.role === 'admin' || u.role === 'main_admin') {
+          let roleTag = u.role === 'main_admin' ? '(Main Admin)' : '(Admin)';
+          container.innerHTML += `<div class="admin-list-item"><span>${uDoc.id}</span> <span style="color:var(--accent-pink);">${roleTag}</span></div>`;
+        }
+      });
+    }
   </script>
 </body>
 </html>
