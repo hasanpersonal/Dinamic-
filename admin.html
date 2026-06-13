@@ -3,55 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Creator Studio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>NeonTube - Studio</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="admin-body">
+<body>
 
   <header>
-    <div class="header-logo">
-      <i class="fa-solid fa-video logo-icon"></i>
-      <h1>Creator Studio</h1>
+    <div class="brand">Creator Studio</div>
+    <div class="header-right">
+      <a href="index.html" class="btn btn-outline">Back to Feed</a>
     </div>
-    <a href="index.html" class="btn outline-btn"><i class="fa-solid fa-arrow-left"></i> View Site</a>
   </header>
 
   <div class="studio-container">
-    <div id="login-box" class="premium-card">
-      <h2><i class="fa-solid fa-lock"></i> Admin Authentication</h2>
-      <p class="subtitle">Enter your studio credentials</p>
-      <input type="password" id="admin-password" class="premium-input" placeholder="Password (admin123)">
-      <button id="login-btn" class="btn primary-btn full-width"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
-      <p id="login-error" class="error-text" style="display:none;">Access Denied. Incorrect Password.</p>
+    
+    <div id="main-admin-panel" class="panel-section" style="display: none; border-color: var(--accent-pink);">
+      <h2 style="color: var(--accent-pink); margin-bottom: 15px;">Admin Requests</h2>
+      <div id="request-list"><p class="uploader-info">Loading requests...</p></div>
     </div>
 
-    <div id="admin-panel" style="display: none;">
-      <div class="premium-card mb-20">
-        <h2><i class="fa-solid fa-cloud-arrow-up"></i> Upload Media</h2>
-        
-        <div class="upload-area">
-          <input type="file" id="file-input" accept="image/*,video/*" class="file-input-custom">
-        </div>
-        
-        <textarea id="caption-input" class="premium-input" placeholder="Write an engaging title or caption..." rows="3"></textarea>
-        <button id="upload-btn" class="btn primary-btn full-width"><i class="fa-solid fa-upload"></i> Publish to Feed</button>
-        <p id="status" class="status-msg"></p>
-      </div>
+    <div class="panel-section">
+      <h2 style="color: var(--accent-cyan); margin-bottom: 15px;">Upload New Content</h2>
+      <input type="text" id="post-heading" class="input-field" placeholder="Enter Post Heading...">
+      <input type="file" id="file-input" class="input-field" accept="image/*,video/*">
+      <textarea id="post-caption" class="input-field" rows="4" placeholder="Write paragraph/caption..."></textarea>
       
-      <div class="premium-card">
-        <h2><i class="fa-solid fa-list"></i> Manage Content</h2>
-        <div id="admin-feed" class="manage-list">
-          <p class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> Loading your videos/images...</p>
-        </div>
-      </div>
+      <button id="upload-btn" class="btn btn-cyan" style="width: 100%;">Upload to NeonTube</button>
+      <p id="status" style="margin-top: 15px; text-align: center; font-weight: bold;"></p>
     </div>
+
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyApS9a6cxv7O0LMARD7IKOr-WEQAtlq9fI",
@@ -65,33 +50,64 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    const currentUser = localStorage.getItem('nt_user');
+    const currentRole = localStorage.getItem('nt_role');
+
+    // Authentication Check
+    if(!currentUser || currentRole === 'user') {
+      document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px; color:red;'>Access Denied! You are not an admin.</h1>";
+    }
+
+    // Main Admin Features
+    if(currentRole === 'main_admin') {
+      document.getElementById('main-admin-panel').style.display = 'block';
+      loadAdminRequests();
+    }
+
+    async function loadAdminRequests() {
+      const list = document.getElementById('request-list');
+      const snap = await getDocs(collection(db, "users"));
+      list.innerHTML = "";
+      let found = false;
+
+      snap.forEach(uDoc => {
+        let u = uDoc.data();
+        if(u.requestAdmin === true && u.role === 'user') {
+          found = true;
+          list.innerHTML += `
+            <div class="admin-list-item" style="align-items:center;">
+              <span><strong>${uDoc.id}</strong> wants to be an admin.</span>
+              <button class="btn btn-cyan" onclick="approveAdmin('${uDoc.id}')">Approve</button>
+            </div>
+          `;
+        }
+      });
+      if(!found) list.innerHTML = "<p style='color:gray;'>No pending requests.</p>";
+    }
+
+    window.approveAdmin = async function(username) {
+      await updateDoc(doc(db, "users", username), { role: 'admin', requestAdmin: false });
+      alert(`${username} is now an Admin!`);
+      loadAdminRequests();
+    }
+
+    // Upload Logic
     const CLOUD_NAME = "docif5nym"; 
     const UPLOAD_PRESET = "my_preset"; 
 
-    // Login
-    document.getElementById('login-btn').addEventListener('click', () => {
-      if(document.getElementById('admin-password').value === "admin123") { 
-        document.getElementById('login-box').style.display = 'none';
-        document.getElementById('admin-panel').style.display = 'block';
-        loadAdminFeed();
-      } else {
-        document.getElementById('login-error').style.display = 'block';
-      }
-    });
-
-    // Upload
     document.getElementById('upload-btn').addEventListener('click', async () => {
+      const heading = document.getElementById('post-heading').value.trim();
+      const caption = document.getElementById('post-caption').value.trim();
       const fileInput = document.getElementById('file-input');
       const status = document.getElementById('status');
 
-      if(fileInput.files.length === 0) {
-        status.innerHTML = "<span class='error-text'>Please select a file first.</span>";
-        return;
+      if(!heading || fileInput.files.length === 0) {
+        return status.innerText = "Heading and File are required!";
       }
 
       const file = fileInput.files[0];
-      status.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Uploading securely...";
-      status.style.color = "#3ea6ff";
+      status.style.color = "var(--accent-cyan)";
+      status.innerText = "Uploading to Server...";
 
       const formData = new FormData();
       formData.append('file', file);
@@ -102,61 +118,30 @@
         const data = await response.json();
 
         if(data.secure_url) {
-          status.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Syncing with database...";
+          status.innerText = "Saving data...";
           await addDoc(collection(db, "posts"), {
+            heading: heading,
+            caption: caption,
             fileUrl: data.secure_url,
             fileType: file.type,
-            caption: document.getElementById('caption-input').value,
-            likedUsers: [],
+            uploaderName: currentUser,
+            reactions: { '👍':0, '❤️':0, '😂':0, '😲':0, '😢':0 },
+            userReactions: {},
             comments: [],
             createdAt: Date.now()
           });
 
-          status.innerHTML = "<span class='success-text'><i class='fa-solid fa-check-circle'></i> Upload Successful!</span>";
+          status.style.color = "#22c55e";
+          status.innerText = "Upload Successful!";
+          document.getElementById('post-heading').value = "";
+          document.getElementById('post-caption').value = "";
           fileInput.value = "";
-          document.getElementById('caption-input').value = "";
-          loadAdminFeed();
         }
-      } catch (error) {
-        status.innerHTML = "<span class='error-text'><i class='fa-solid fa-circle-exclamation'></i> Upload Failed.</span>";
+      } catch (e) {
+        status.style.color = "#ef4444";
+        status.innerText = "Upload Failed!";
       }
     });
-
-    // Manage/Delete Feed
-    async function loadAdminFeed() {
-      const adminFeed = document.getElementById('admin-feed');
-      try {
-        const snapshot = await getDocs(collection(db, "posts"));
-        adminFeed.innerHTML = "";
-        if(snapshot.empty) { adminFeed.innerHTML = "<p>No content uploaded yet.</p>"; return; }
-
-        snapshot.forEach(docData => {
-          const post = docData.data();
-          const item = document.createElement('div');
-          item.className = "manage-item";
-          item.innerHTML = `
-            <div class="manage-info">
-              <i class="fa-solid ${post.fileType?.startsWith('video') ? 'fa-video' : 'fa-image'}"></i>
-              <span>${post.caption || 'Untitled Media'}</span>
-            </div>
-            <button class="btn delete-btn" data-id="${docData.id}"><i class="fa-solid fa-trash"></i></button>
-          `;
-          adminFeed.appendChild(item);
-        });
-
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            if(confirm("Permanently delete this post?")) {
-              const btnEl = e.currentTarget;
-              const id = btnEl.getAttribute('data-id');
-              btnEl.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
-              await deleteDoc(doc(db, "posts", id));
-              loadAdminFeed();
-            }
-          });
-        });
-      } catch(err) { adminFeed.innerHTML = "<p>Error loading content.</p>"; }
-    }
   </script>
 </body>
 </html>
