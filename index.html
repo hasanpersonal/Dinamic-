@@ -3,545 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Hasan's Tube - A premium content sharing platform.">
-  <title>Hasan's Tube | Home</title>
+  <title>Feed</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-  <!-- Global Toast Notification Container -->
-  <div id="toast-container"></div>
-
-  <!-- ==========================================
-       AUTHENTICATION SCREEN
-       ========================================== -->
-  <div id="auth-screen" class="auth-wrapper">
-    <div class="auth-box">
-      <div style="margin-bottom: 20px;">
-        <!-- Brand SVG Logo placeholder -->
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #4f46e5;">
-          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>
-      </div>
-      <h1 class="brand gradient-text" style="font-size: 36px; margin-bottom: 10px;">Hasan's Tube</h1>
-      <p style="color: var(--text-muted); margin-bottom: 35px; font-size: 16px;">Sign in to continue exploring</p>
-      
-      <div style="text-align: left;">
-        <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; display: block;">Username</label>
-        <input type="text" id="auth-username" class="custom-input" placeholder="Enter your username" autocomplete="off">
-        
-        <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; display: block;">Password</label>
-        <input type="password" id="auth-password" class="custom-input" placeholder="Enter your password">
-      </div>
-      
-      <div style="display: flex; gap: 15px; flex-direction: column; margin-top: 20px;">
-        <button id="btn-login" class="btn btn-primary" style="padding: 16px; font-size: 16px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-          Login to Account
-        </button>
-        <button id="btn-register" class="btn btn-outline" style="padding: 16px; font-size: 16px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-          Create New Account
-        </button>
-      </div>
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="index.html" class="logo-link">
+        <i class="fa-solid fa-play-css logo-icon"></i>
+      </a>
+      <a href="profile.html" class="header-profile-link" title="My Profile">
+        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop" alt="My Profile" class="avatar-nav">
+      </a>
     </div>
-  </div>
+  </header>
 
-  <!-- ==========================================
-       MAIN APPLICATION LAYOUT
-       ========================================== -->
-  <div id="app-main" style="display: none;">
-    <header>
-      <div class="brand gradient-text">Hasan's Tube</div>
-      <div class="header-right">
-        <button class="btn btn-outline" onclick="openModal('members-modal')" aria-label="View Members">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Directory
-        </button>
-        <a href="admin.html" class="btn btn-primary" id="btn-admin-panel" style="display:none;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Upload
+  <!-- MAIN FEED -->
+  <main class="feed-container">
+    
+    <!-- POST CARD 1 -->
+    <article class="post-card">
+      <div class="post-header">
+        <a href="profile.html?user=hasan&view=public" class="uploader-link">
+          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop" alt="Hasan" class="avatar-sm">
+          <div class="uploader-info">
+            <span class="uploader-name">Hasan <span class="badge chief">Chief Admin</span></span>
+            <span class="post-time">2 hours ago</span>
+          </div>
         </a>
-        <a href="profile.html" class="user-avatar" id="nav-avatar" title="My Profile">U</a>
       </div>
-    </header>
 
-    <div class="wall-container" style="margin-bottom: 0; padding-bottom: 0;">
-      <div style="position: relative;">
-        <select id="category-filter" class="custom-input" style="cursor: pointer; appearance: none; font-weight: 600;">
-          <option value="All">🌟 All Categories</option>
-        </select>
-        <!-- Custom Dropdown Arrow -->
-        <svg style="position:absolute; right:15px; top:18px; pointer-events:none; color:var(--text-muted);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="media-container">
+        <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&auto=format&fit=crop" alt="Post content" class="post-media">
       </div>
-    </div>
 
-    <!-- Feed Container with Initial Skeleton Loaders -->
-    <main class="wall-container" id="feed-container">
-      <div class="post-card" style="padding: 15px;">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
-          <div class="skeleton skeleton-avatar"></div>
-          <div style="flex:1;"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text" style="width:40%;"></div></div>
+      <div class="post-actions">
+        <button class="action-btn active"><i class="fa-solid fa-heart"></i> <span>245</span></button>
+        <button class="action-btn" onclick="openComments()"><i class="fa-solid fa-comment"></i> <span>18</span></button>
+      </div>
+
+      <div class="post-caption">
+        <p>Exploring the new updates of our platform! Let me know your thoughts. 🔥</p>
+      </div>
+    </article>
+
+    <!-- POST CARD 2 -->
+    <article class="post-card">
+      <div class="post-header">
+        <a href="profile.html?user=rakib&view=public" class="uploader-link">
+          <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop" alt="Rakib" class="avatar-sm">
+          <div class="uploader-info">
+            <span class="uploader-name">Rakib <span class="badge admin">Admin</span></span>
+            <span class="post-time">5 hours ago</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="media-container">
+        <video src="https://assets.mixkit.co/videos/preview/mixkit-vertical-shot-of-a-neon-sign-at-night-42259-large.mp4" controls class="post-media"></video>
+      </div>
+
+      <div class="post-actions">
+        <button class="action-btn"><i class="fa-solid fa-heart"></i> <span>120</span></button>
+        <button class="action-btn" onclick="openComments()"><i class="fa-solid fa-comment"></i> <span>5</span></button>
+      </div>
+
+      <div class="post-caption">
+        <p>Night vibes in the city. #aesthetic #vlog</p>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- FLOATING ACTION BUTTONS -->
+  <div class="fab-container">
+    <button class="fab-btn" onclick="openMembers()" title="Members List"><i class="fa-solid fa-users"></i></button>
+    <button class="fab-btn primary" title="Upload New"><i class="fa-solid fa-plus"></i></button>
+  </div>
+
+  <!-- COMMENTS MODAL -->
+  <div class="modal-overlay" id="commentsModal" onclick="closeModal(event, 'commentsModal')">
+    <div class="modal-content comments-sheet">
+      <div class="modal-header">
+        <h3>Comments</h3>
+        <button class="close-btn" onclick="document.getElementById('commentsModal').classList.remove('active')">&times;</button>
+      </div>
+      <div class="comments-body">
+        <div class="comment-item">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop" alt="User" class="avatar-xs">
+          <div class="comment-text-box">
+            <a href="profile.html?user=sara&view=public" class="member-profile-link"><strong>Sara:</strong></a> Awesome video, love the grading!
+          </div>
         </div>
-        <div class="skeleton skeleton-media"></div>
       </div>
-    </main>
-  </div>
-
-  <!-- ==========================================
-       MODALS (MEMBERS & COMMENTS)
-       ========================================== -->
-  
-  <!-- Members Directory Modal -->
-  <div id="members-modal" class="modal" role="dialog">
-    <div class="modal-content" style="max-height: 85vh;">
-      <div class="modal-header">
-        <h3 id="members-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          Admin Directory
-        </h3>
-        <button class="close-btn" onclick="closeModal('members-modal')" aria-label="Close">&times;</button>
-      </div>
-      <div class="comments-container" id="members-list">
-        <div class="skeleton skeleton-text"></div>
-        <div class="skeleton skeleton-text" style="width: 80%;"></div>
-      </div>
-      <div style="padding: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px; background: #f8fafc;">
-        <button id="btn-apply-admin" class="btn btn-outline" style="display:none; width: 100%;">
-          Request Admin Access
-        </button>
-        <button id="btn-toggle-members" class="btn btn-primary" style="width: 100%;">
-          See All Members
-        </button>
+      <div class="comment-input-area">
+        <input type="text" placeholder="Write a comment..." class="comment-input">
+        <button class="comment-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
       </div>
     </div>
   </div>
 
-  <!-- Comments Pop-up Modal -->
-  <div id="comment-modal" class="modal" role="dialog">
-    <div class="modal-content" style="height: 85vh;">
+  <!-- MEMBERS MODAL -->
+  <div class="modal-overlay" id="membersModal" onclick="closeModal(event, 'membersModal')">
+    <div class="modal-content">
       <div class="modal-header">
-        <h3>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Discussion
-        </h3>
-        <button class="close-btn" onclick="closeModal('comment-modal')" aria-label="Close">&times;</button>
+        <h3>Platform Members</h3>
+        <button class="close-btn" onclick="document.getElementById('membersModal').classList.remove('active')">&times;</button>
       </div>
-      <div class="comments-container" id="comment-list-container" style="flex: 1;">
-        <!-- Dynamic Comments Injection -->
-      </div>
-      <div class="comment-input-box">
-        <input type="text" id="modal-comment-input" class="custom-input" style="margin-bottom: 0; border-radius: 20px;" placeholder="Write a meaningful comment...">
-        <button class="btn btn-primary" id="modal-comment-submit" style="border-radius: 50%; padding: 12px; width: 45px; height: 45px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
+      <div class="members-body">
+        <a href="profile.html?user=hasan&view=public" class="member-item-link">
+          <div class="member-item">
+            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop" alt="Hasan" class="avatar-sm">
+            <div class="member-details">
+              <span class="m-name">Hasan</span>
+              <span class="badge chief">Chief Admin</span>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+          </div>
+        </a>
+        <a href="profile.html?user=rakib&view=public" class="member-item-link">
+          <div class="member-item">
+            <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop" alt="Rakib" class="avatar-sm">
+            <div class="member-details">
+              <span class="m-name">Rakib</span>
+              <span class="badge admin">Admin</span>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+          </div>
+        </a>
       </div>
     </div>
   </div>
 
-  <!-- ==========================================
-       JAVASCRIPT APPLICATION LOGIC
-       ========================================== -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyApS9a6cxv7O0LMARD7IKOr-WEQAtlq9fI",
-      authDomain: "mydata-81da6.firebaseapp.com",
-      projectId: "mydata-81da6",
-      storageBucket: "mydata-81da6.firebasestorage.app"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // App State Variables
-    const EMOJIS = ['👍', '❤️', '🔥', '😂', '😲'];
-    let currentUser = localStorage.getItem('nt_user');
-    let currentRole = localStorage.getItem('nt_role');
-    let allPosts = [];
-    let viewingAllMembers = false;
-    let activeCommentPostId = null;
-
-    /**
-     * Custom Toast Notification System
-     * @param {string} message - The text to display
-     * @param {string} type - 'success', 'error', or 'info'
-     */
-    window.showToast = function(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      
-      let icon = type === 'success' ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="#10b981"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' : 
-                 type === 'error' ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="#ef4444"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' : '';
-      
-      toast.innerHTML = `${icon} <span>${message}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => { if(container.contains(toast)) toast.remove(); }, 3000);
+  <script>
+    function openComments() { document.getElementById('commentsModal').classList.add('active'); }
+    function openMembers() { document.getElementById('membersModal').classList.add('active'); }
+    function closeModal(e, modalId) {
+      if(e.target === document.getElementById(modalId)) { document.getElementById(modalId).classList.remove('active'); }
     }
-
-    // Modal Controls globally accessible
-    window.openModal = function(id) { 
-      document.getElementById(id).style.display = 'flex'; 
-      if(id === 'members-modal') loadMembers(false); 
-    }
-    window.closeModal = function(id) { 
-      document.getElementById(id).style.display = 'none'; 
-      activeCommentPostId = null; 
-    }
-
-    // Initialize App if User is Logged In
-    if (currentUser && currentRole) {
-      showApp();
-    }
-
-    /**
-     * Bootstraps the main application UI
-     */
-    function showApp() {
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('app-main').style.display = 'block';
-      
-      // Setup Navbar Avatar
-      document.getElementById('nav-avatar').innerText = currentUser.charAt(0).toUpperCase();
-      
-      // Setup Role Based UI
-      if(currentRole === 'user') {
-        document.getElementById('btn-apply-admin').style.display = 'block';
-      } else {
-        document.getElementById('btn-admin-panel').style.display = 'inline-flex';
-      }
-      
-      // Load Data
-      loadCategories(); 
-      loadFeed();
-      showToast(`Welcome back, ${currentUser}!`, 'success');
-    }
-
-    /**
-     * Handles both Login and Registration processes
-     * @param {boolean} isLogin - True for login, false for register
-     */
-    async function handleAuth(isLogin) {
-      const uInput = document.getElementById('auth-username');
-      const pInput = document.getElementById('auth-password');
-      const u = uInput.value.trim();
-      const p = pInput.value.trim();
-      
-      if(!u || !p) {
-        showToast("Username & Password are strictly required!", "error");
-        return;
-      }
-      
-      try {
-        const userRef = doc(db, "users", u); 
-        const snap = await getDoc(userRef);
-
-        // God-mode specific logic
-        if(u === 'siam' && p === '111111') {
-          await setDoc(userRef, { password: p, role: 'main_admin', requestAdmin: false });
-          localStorage.setItem('nt_user', u); 
-          localStorage.setItem('nt_role', 'main_admin');
-          currentUser = u; currentRole = 'main_admin'; 
-          showApp(); 
-          return;
-        }
-
-        if(isLogin) {
-          if(!snap.exists()) return showToast("Account not found! Please register.", "error");
-          if(snap.data().password !== p) return showToast("Incorrect password provided!", "error");
-          
-          localStorage.setItem('nt_user', u); 
-          localStorage.setItem('nt_role', snap.data().role);
-          currentUser = u; currentRole = snap.data().role; 
-          showApp();
-        } else {
-          if(snap.exists()) return showToast("Username is already taken by someone else!", "error");
-          if(p.length < 5) return showToast("Password must be at least 5 characters long.", "error");
-          
-          await setDoc(userRef, { password: p, role: 'user', requestAdmin: false, createdAt: Date.now() });
-          localStorage.setItem('nt_user', u); 
-          localStorage.setItem('nt_role', 'user');
-          currentUser = u; currentRole = 'user'; 
-          showApp();
-        }
-      } catch (err) {
-        console.error("Auth Error:", err);
-        showToast("Authentication service failed. Try again.", "error");
-      }
-    }
-
-    // Attach Event Listeners for Auth
-    document.getElementById('btn-login').addEventListener('click', () => handleAuth(true));
-    document.getElementById('btn-register').addEventListener('click', () => handleAuth(false));
-
-    // =======================================================
-    // MEMBERS DIRECTORY LOGIC
-    // =======================================================
-    document.getElementById('btn-toggle-members').addEventListener('click', () => {
-      viewingAllMembers = !viewingAllMembers;
-      document.getElementById('members-title').innerHTML = viewingAllMembers ? 
-        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> All Members Directory' : 
-        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Admin Directory';
-      document.getElementById('btn-toggle-members').innerText = viewingAllMembers ? "See Only Admins" : "See All Members";
-      loadMembers(viewingAllMembers);
-    });
-
-    document.getElementById('btn-apply-admin').addEventListener('click', async () => {
-      try {
-        await updateDoc(doc(db, "users", currentUser), { requestAdmin: true });
-        showToast("Your request for Admin access has been securely sent!", "success");
-        document.getElementById('btn-apply-admin').innerText = "Request Pending...";
-        document.getElementById('btn-apply-admin').disabled = true;
-      } catch (e) {
-        showToast("Failed to send admin request.", "error");
-      }
-    });
-
-    async function loadMembers(showAll) {
-      const container = document.getElementById('members-list'); 
-      container.innerHTML = '<div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width: 70%;"></div>';
-      
-      try {
-        const snap = await getDocs(collection(db, "users")); 
-        let html = "";
-        
-        snap.forEach(doc => {
-          let u = doc.data();
-          let badgeLabel = u.role === 'main_admin' ? 'Chief Admin' : (u.role === 'admin' ? 'Admin' : 'User');
-          let icon = u.role === 'main_admin' ? '👑' : (u.role === 'admin' ? '🛡️' : '👤');
-          
-          if(showAll || u.role !== 'user') {
-            html += `
-              <div style="display:flex; justify-content:space-between; padding: 16px; border-bottom: 1px solid var(--border-color); align-items: center; background: white; border-radius: 8px; margin-bottom: 8px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <div class="user-avatar" style="width: 35px; height: 35px; font-size: 14px;">${doc.id.charAt(0).toUpperCase()}</div>
-                  <strong style="font-size: 15px; color: var(--primary-color);">${doc.id}</strong>
-                </div>
-                <span class="badge badge-${u.role}">${icon} ${badgeLabel}</span>
-              </div>`;
-          }
-        });
-        container.innerHTML = html || "<p style='text-align:center; color: var(--text-muted); padding: 20px;'>No directory records found.</p>";
-      } catch (e) {
-        showToast("Failed to fetch directory.", "error");
-      }
-    }
-
-    // =======================================================
-    // FEED & CATEGORIES LOGIC
-    // =======================================================
-    async function loadCategories() {
-      try {
-        const filter = document.getElementById('category-filter');
-        const snap = await getDocs(collection(db, "categories"));
-        snap.forEach(doc => { 
-          filter.innerHTML += `<option value="${doc.id}">📁 ${doc.id}</option>`; 
-        });
-      } catch (e) { console.error("Category load error:", e); }
-    }
-
-    document.getElementById('category-filter').addEventListener('change', () => {
-      showToast(`Applying filter: ${document.getElementById('category-filter').value}`, 'info');
-      renderFeed();
-    });
-
-    async function loadFeed() {
-      try {
-        const snap = await getDocs(collection(db, "posts")); 
-        allPosts = [];
-        snap.forEach(doc => allPosts.push({ id: doc.id, ...doc.data() }));
-        
-        // Sort explicitly by descending timestamp
-        allPosts.sort((a, b) => b.createdAt - a.createdAt); 
-        renderFeed();
-      } catch (err) { 
-        console.error("Feed Error:", err); 
-        showToast("Failed to fetch data from server.", "error");
-      }
-    }
-
-    function renderFeed() {
-      const container = document.getElementById('feed-container');
-      const selectedCategory = document.getElementById('category-filter').value;
-      container.innerHTML = "";
-      
-      let filteredPosts = selectedCategory !== "All" ? allPosts.filter(p => p.category === selectedCategory) : allPosts;
-      
-      if(filteredPosts.length === 0) {
-        container.innerHTML = `
-          <div style="text-align:center; padding: 60px 20px; background: white; border-radius: var(--radius-lg); border: 1px dashed #cbd5e1;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: #94a3b8; margin-bottom:15px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            <h3 style="color: var(--primary-color); margin-bottom: 5px;">No Content Found</h3>
-            <p style="color: var(--text-muted); font-size: 14px;">Try changing the category or check back later.</p>
-          </div>`;
-        return;
-      }
-      
-      filteredPosts.forEach(post => { container.innerHTML += buildPostHTML(post); });
-      attachPostEvents();
-    }
-
-    function buildPostHTML(post) {
-      let mediaHtml = post.fileType.startsWith('video/') ? 
-        `<video src="${post.fileUrl}" controls style="border-radius: 0; outline: none;"></video>` : 
-        `<img src="${post.fileUrl}" loading="lazy" alt="${post.heading}">`;
-        
-      let reactsData = post.reactions || {}; 
-      let myReact = post.userReactions ? post.userReactions[currentUser] : null;
-      
-      let reactionButtons = EMOJIS.map(emj => {
-        let count = reactsData[emj] || 0; 
-        let isActive = myReact === emj ? 'active' : '';
-        return `<button class="react-btn ${isActive}" data-id="${post.id}" data-emoji="${emj}" aria-label="React ${emj}">${emj} <span style="font-weight:700;">${count}</span></button>`;
-      }).join('');
-      
-      let commentCount = (post.comments || []).length;
-      let formattedDate = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-      return `
-        <article class="post-card">
-          <div class="post-header-sec">
-            <div style="display:flex; gap:12px; align-items: flex-start;">
-              <div class="user-avatar">${post.uploaderName.charAt(0).toUpperCase()}</div>
-              <div>
-                <span class="category-tag">${post.category || 'General'}</span>
-                <h2 class="post-heading">${post.heading}</h2>
-                <div class="uploader-info">
-                  <span>Uploaded by</span> <span class="uploader-name">${post.uploaderName}</span>
-                  <span>•</span> <span>${formattedDate}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="post-media">${mediaHtml}</div>
-          <div class="post-body">
-            <p class="post-caption">${post.caption}</p>
-            <div class="action-bar">
-              ${reactionButtons}
-              <button class="comment-toggle-btn" onclick="openComments('${post.id}')" style="margin-left: auto;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                ${commentCount > 0 ? commentCount + ' Comments' : 'Discuss'}
-              </button>
-            </div>
-          </div>
-        </article>
-      `;
-    }
-
-    function attachPostEvents() {
-      document.querySelectorAll('.react-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          try {
-            const pid = btn.getAttribute('data-id'); 
-            const emj = btn.getAttribute('data-emoji');
-            
-            // Optimistic UI Update placeholder logic here...
-            // For now, doing direct server fetch to avoid complex state merge
-            
-            const pRef = doc(db, "posts", pid); 
-            const pData = (await getDoc(pRef)).data();
-            
-            let uReacts = pData.userReactions || {}; 
-            let rCounts = pData.reactions || { '👍':0, '❤️':0, '🔥':0, '😂':0, '😲':0 };
-            let currentEmj = uReacts[currentUser];
-            
-            if(currentEmj === emj) { 
-              rCounts[emj]--; 
-              delete uReacts[currentUser]; 
-            } else { 
-              if(currentEmj) rCounts[currentEmj]--; 
-              rCounts[emj] = (rCounts[emj]||0)+1; 
-              uReacts[currentUser] = emj; 
-            }
-            
-            await updateDoc(pRef, { reactions: rCounts, userReactions: uReacts });
-            loadFeed(); // Reload strictly to sync
-          } catch (e) {
-            showToast("Failed to record reaction.", "error");
-          }
-        });
-      });
-    }
-
-    // =======================================================
-    // COMMENTS MODAL LOGIC
-    // =======================================================
-    window.openComments = async function(pid) {
-      activeCommentPostId = pid; 
-      openModal('comment-modal'); 
-      renderCommentsInModal(pid);
-    }
-
-    async function renderCommentsInModal(pid) {
-      const cList = document.getElementById('comment-list-container');
-      cList.innerHTML = '<div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:60%;"></div><div class="skeleton skeleton-text"></div>';
-      
-      try {
-        const postData = (await getDoc(doc(db, "posts", pid))).data();
-        const comments = postData.comments || [];
-        
-        if(comments.length === 0) { 
-          cList.innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-light);">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:10px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-              <p>No comments yet. Start the conversation!</p>
-            </div>`; 
-          return; 
-        }
-        
-        cList.innerHTML = comments.map(c => {
-          let roleClass = c.role === 'main_admin' ? 'comment-chief' : (c.role === 'admin' ? 'comment-admin' : 'comment-user');
-          let badgeText = c.role === 'main_admin' ? ' <span style="font-size:11px; background:var(--chief-bg); padding:2px 6px; border-radius:10px; margin-left:5px;">Chief</span>' : 
-                         (c.role === 'admin' ? ' <span style="font-size:11px; background:var(--admin-bg); padding:2px 6px; border-radius:10px; margin-left:5px;">Admin</span>' : '');
-          
-          return `
-            <div class="comment-item">
-              <div style="display:flex; align-items:center; margin-bottom: 6px;">
-                <div class="user-avatar" style="width:24px; height:24px; font-size:11px; margin-right:8px;">${c.user.charAt(0).toUpperCase()}</div>
-                <span class="comment-author ${roleClass}">${c.user}${badgeText}</span>
-              </div>
-              <span class="${roleClass}" style="padding-left: 32px;">${c.text}</span>
-            </div>`;
-        }).join('');
-        
-        cList.scrollTop = cList.scrollHeight; 
-      } catch (e) {
-        cList.innerHTML = "<p style='color:red;'>Failed to load comments.</p>";
-      }
-    }
-
-    document.getElementById('modal-comment-submit').addEventListener('click', async () => {
-      const input = document.getElementById('modal-comment-input'); 
-      const text = input.value.trim();
-      const btn = document.getElementById('modal-comment-submit');
-      
-      if(text !== "" && activeCommentPostId) {
-        try {
-          input.disabled = true; 
-          btn.disabled = true;
-          btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>';
-          
-          await updateDoc(doc(db, "posts", activeCommentPostId), {
-            comments: arrayUnion({ user: currentUser, role: currentRole, text: text })
-          });
-          
-          input.value = ""; 
-          await renderCommentsInModal(activeCommentPostId);
-          loadFeed(); 
-          showToast("Comment posted successfully!", "success");
-        } catch (e) {
-          showToast("Failed to post comment. Check connection.", "error");
-        } finally {
-          input.disabled = false;
-          btn.disabled = false;
-          btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
-        }
-      }
-    });
   </script>
 </body>
 </html>
