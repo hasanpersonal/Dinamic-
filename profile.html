@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="brand">Profile</div>
+    <div class="header-right">
+      <a href="index.html" class="btn btn-outline">Back to Home</a>
+    </div>
+  </header>
+
+  <div class="wall-container">
+    
+    <div class="profile-header">
+      <div class="profile-avatar" id="prof-avatar">U</div>
+      <h2 id="prof-name" style="font-size: 22px; margin-bottom: 5px;">Username</h2>
+      <span id="prof-badge" class="badge">Badge</span>
+    </div>
+
+    <!-- Security Section -->
+    <div class="post-card" style="padding: 20px;">
+      <h3 style="margin-bottom: 15px; font-size: 16px;">Security</h3>
+      <input type="password" id="new-password" class="custom-input" placeholder="Enter new password">
+      <button id="btn-change-pass" class="btn btn-primary" style="width: 100%;">Update Password</button>
+      <p id="pass-msg" style="text-align: center; font-size: 13px; margin-top: 10px; font-weight: 500;"></p>
+    </div>
+
+    <!-- My Uploads (For Admins) -->
+    <div id="my-posts-section" class="post-card" style="padding: 20px; display: none;">
+      <h3 style="margin-bottom: 15px; font-size: 16px;">My Uploads</h3>
+      <div id="my-posts-container">Loading...</div>
+    </div>
+
+    <button id="btn-logout" class="btn btn-danger" style="width: 100%; padding: 15px; font-size: 16px;">Logout from App</button>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, updateDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApS9a6cxv7O0LMARD7IKOr-WEQAtlq9fI",
+      authDomain: "mydata-81da6.firebaseapp.com",
+      projectId: "mydata-81da6",
+      storageBucket: "mydata-81da6.firebasestorage.app"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const currentUser = localStorage.getItem('nt_user');
+    const currentRole = localStorage.getItem('nt_role');
+
+    if(!currentUser) { window.location.href = "index.html"; }
+
+    // Set Profile Data
+    document.getElementById('prof-name').innerText = currentUser;
+    document.getElementById('prof-avatar').innerText = currentUser.charAt(0).toUpperCase();
+    let badgeLabel = currentRole === 'main_admin' ? 'Chief Admin' : (currentRole === 'admin' ? 'Admin' : 'User');
+    let badgeEl = document.getElementById('prof-badge');
+    badgeEl.innerText = badgeLabel;
+    badgeEl.className = `badge badge-${currentRole}`;
+
+    // Load User Posts
+    if(currentRole !== 'user') {
+      document.getElementById('my-posts-section').style.display = 'block';
+      loadMyPosts();
+    }
+
+    async function loadMyPosts() {
+      const container = document.getElementById('my-posts-container');
+      const snap = await getDocs(collection(db, "posts"));
+      let html = "";
+      snap.forEach(doc => {
+        let p = doc.data();
+        if(p.uploaderName === currentUser) {
+          html += `<div style="display:flex; justify-content:space-between; align-items:center; padding: 12px; background: var(--bg-color); margin-bottom: 8px; border-radius: 12px; border: 1px solid var(--border-color);">
+            <div style="font-size: 14px; font-weight:600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%;">${p.heading}</div>
+            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deletePost('${doc.id}')">Delete</button>
+          </div>`;
+        }
+      });
+      container.innerHTML = html || "<p style='color: var(--text-muted); font-size: 14px;'>No posts uploaded yet.</p>";
+    }
+
+    window.deletePost = async function(pid) {
+      if(confirm("Permanently delete this post?")) {
+        await deleteDoc(doc(db, "posts", pid));
+        loadMyPosts(); 
+      }
+    }
+
+    // Change Password
+    document.getElementById('btn-change-pass').addEventListener('click', async () => {
+      const np = document.getElementById('new-password').value.trim();
+      const msg = document.getElementById('pass-msg');
+      if(np.length < 4) { msg.innerText = "Password must be at least 4 chars!"; msg.style.color="#ef4444"; return; }
+      
+      const btn = document.getElementById('btn-change-pass'); btn.innerText = "Updating...";
+      await updateDoc(doc(db, "users", currentUser), { password: np });
+      msg.innerText = "Password updated successfully!"; msg.style.color="#10b981";
+      document.getElementById('new-password').value = ""; btn.innerText = "Update Password";
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => { 
+      localStorage.clear(); window.location.href = "index.html"; 
+    });
+  </script>
+</body>
+</html>
