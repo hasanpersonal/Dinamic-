@@ -5,7 +5,88 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="A premium content sharing platform.">
   <title>Home | Content Platform</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --bg-color: #f3f4f6; --card-bg: #ffffff; --primary-color: #0f1419; --primary-hover: #272c30;
+      --text-main: #0f1419; --text-muted: #536471; --text-light: #94a3b8;
+      --admin-color: #10b981; --admin-bg: #d1fae5; --admin-border: #a7f3d0;
+      --chief-color: #f97316; --chief-bg: #ffedd5; --chief-border: #fed7aa;
+      --user-bg: #f3f4f6; --user-border: #e2e8f0;
+      --border-color: #eff3f4; --hover-bg: #e7e7e8; --danger-color: #ef4444; 
+      --danger-bg: #fee2e2; --danger-border: #fecaca; --success-color: #10b981;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1); --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+      --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px;
+      --transition-fast: 0.15s ease-in-out;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.4; -webkit-font-smoothing: antialiased; font-size: 13px; }
+
+    header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
+    .brand { font-size: 18px; font-weight: 800; color: var(--primary-color); letter-spacing: -0.5px; }
+    .gradient-text { background: linear-gradient(90deg, #1d4ed8, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .badge { padding: 4px 8px; border-radius: var(--radius-md); font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; text-transform: uppercase; }
+    .badge-main_admin { background: var(--chief-bg); color: var(--chief-color); border: 1px solid var(--chief-border); }
+    .badge-admin { background: var(--admin-bg); color: var(--admin-color); border: 1px solid var(--admin-border); }
+    .badge-user { background: var(--user-bg); color: var(--text-muted); border: 1px solid var(--user-border); }
+
+    .user-avatar { background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #334155; font-size: 13px; border: 2px solid transparent; transition: var(--transition-fast); }
+
+    .btn { padding: 10px 14px; border: none; border-radius: var(--radius-xl); cursor: pointer; font-weight: 600; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: var(--transition-fast); }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-outline { border: 1px solid var(--border-color); color: var(--text-main); background: white; }
+    .btn-outline:hover { background: var(--bg-color); }
+    .btn-danger { background: var(--danger-bg); color: var(--danger-color); border: 1px solid var(--danger-border);}
+
+    .custom-input { width: 100%; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); outline: none; font-size: 13px; background: #f9fafb; margin-bottom: 12px; color: var(--text-main); }
+    .custom-input:focus { border-color: #94a3b8; background: white; box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.2); }
+
+    .wall-container { max-width: 500px; margin: 20px auto; padding: 0 12px; }
+    .post-card { background: var(--card-bg); border-radius: var(--radius-lg); margin-bottom: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); }
+
+    .post-header-sec { padding: 14px; }
+    .post-heading { font-size: 15px; font-weight: 800; margin-bottom: 4px; line-height: 1.2;}
+    .category-tag { font-size: 10px; font-weight: 700; color: #4f46e5; background: #e0e7ff; padding: 3px 8px; border-radius: 6px; display: inline-block; margin-bottom: 6px; text-transform: uppercase;}
+    .uploader-info { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px;}
+    .uploader-name { color: var(--primary-color); font-weight: 700; }
+
+    .post-media { width: 100%; background: #000; }
+    .post-media img, .post-media video { width: 100%; aspect-ratio: 4 / 6; object-fit: cover; display: block; }
+    .post-body { padding: 14px; }
+    .post-caption { font-size: 13px; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap;}
+
+    .action-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; border-top: 1px solid var(--border-color); padding-top: 14px; }
+    .react-btn, .comment-toggle-btn { background: var(--bg-color); border: 1px solid transparent; padding: 6px 12px; border-radius: var(--radius-xl); cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-muted); display: flex; gap: 5px; align-items: center;}
+    .react-btn.active { background: #dbeafe; color: #1e3a8a; border-color: #bfdbfe; }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 20, 25, 0.6); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
+    .modal-content { background: white; border-radius: var(--radius-lg); width: 100%; max-width: 420px; display: flex; flex-direction: column; overflow: hidden; }
+    .modal-header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+    .close-btn { font-size: 24px; cursor: pointer; color: var(--text-light); line-height: 1; border: none; background: transparent; padding: 0 5px; }
+
+    .comments-container { overflow-y: auto; background: #fafafa; }
+    .comment-item { margin-bottom: 10px; font-size: 12px; background: white; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
+    .comment-author { font-weight: 800; font-size: 12px;}
+    .comment-chief { color: var(--chief-color); } .comment-admin { color: var(--admin-color); } .comment-user { color: var(--text-main); }
+
+    #toast-container { position: fixed; bottom: 15px; right: 15px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast { background: white; padding: 12px 18px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); font-weight: 600; font-size: 12px; border-left: 3px solid var(--primary-color); }
+    .toast.success { border-left-color: var(--success-color); } .toast.error { border-left-color: var(--danger-color); }
+
+    .skeleton { background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); background-size: 200% 100%; animation: 1.5s shine-loader linear infinite; border-radius: 4px; }
+    .skeleton-title { width: 60%; height: 18px; margin-bottom: 8px; } .skeleton-text { width: 100%; height: 12px; margin-bottom: 6px; } .skeleton-media { width: 100%; aspect-ratio: 4/6; }
+
+    .auth-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 15px; background: white;}
+    .auth-box { width: 100%; max-width: 360px; text-align: center; }
+    .profile-header { text-align: center; padding: 30px 15px; background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-color); margin-bottom: 20px; box-shadow: var(--shadow-sm); }
+    .profile-avatar-lg { width: 70px; height: 70px; border-radius: 50%; background: var(--bg-color); color: var(--text-muted); font-size: 28px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border: 3px solid white; box-shadow: var(--shadow-sm); }
+
+    @keyframes shine-loader { to { background-position-x: -200%; } }
+  </style>
 </head>
 <body>
 
@@ -44,14 +125,20 @@
 
   <div id="app-main" style="display: none;">
     
-    <header style="display: flex; gap: 15px; justify-content: flex-start; align-items: center; overflow-x: auto; white-space: nowrap;">
-      <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;" onclick="window.location.href='profile.html'">
-        <div class="user-avatar" id="nav-avatar" style="width: 32px; height: 32px; font-size: 14px;">U</div>
-        <span style="font-size: 10px; color: var(--text-muted); margin-top: 2px; font-weight: 700;">view</span>
-      </div>
+    <!-- Update Header: Logo on the right (larger), Req Admin and Upload buttons dynamic based on user role -->
+    <header style="display: flex; gap: 15px; justify-content: flex-start; align-items: center; padding: 12px 15px; overflow-x: auto; white-space: nowrap;">
+      
       <button class="btn btn-outline" onclick="openMembers(true)">Admins</button>
       <button class="btn btn-outline" onclick="openMembers(false)">Members</button>
+      
       <a href="admin.html" class="btn btn-primary" id="btn-admin-panel" style="display:none;">Upload</a>
+      <button id="btn-request-nav" class="btn btn-primary" style="display:none;" onclick="applyForAdmin()">Req Admin</button>
+
+      <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer; margin-left: auto;" onclick="window.location.href='profile.html'">
+        <div class="user-avatar" id="nav-avatar" style="width: 40px; height: 40px; font-size: 16px;">U</div>
+        <span style="font-size: 10px; color: var(--text-muted); margin-top: 2px; font-weight: 700;">view</span>
+      </div>
+
     </header>
 
     <div class="wall-container" style="margin-bottom: 0; padding-bottom: 0;">
@@ -149,13 +236,18 @@
 
     if (currentUser && currentRole) showApp();
 
+    // Updated showApp function
     function showApp() {
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('app-main').style.display = 'block';
       document.getElementById('nav-avatar').innerText = currentUser.charAt(0).toUpperCase();
       
-      if(currentRole === 'user') { document.getElementById('btn-apply-admin').style.display = 'block'; } 
-      else { document.getElementById('btn-admin-panel').style.display = 'inline-flex'; }
+      if(currentRole === 'user') { 
+        document.getElementById('btn-apply-admin').style.display = 'block'; 
+        document.getElementById('btn-request-nav').style.display = 'inline-flex'; 
+      } else { 
+        document.getElementById('btn-admin-panel').style.display = 'inline-flex'; 
+      }
       
       loadCategories(); loadFeed();
     }
@@ -194,14 +286,23 @@
     document.getElementById('btn-login').addEventListener('click', () => handleAuth(true));
     document.getElementById('btn-register').addEventListener('click', () => handleAuth(false));
 
-    document.getElementById('btn-apply-admin').addEventListener('click', async () => {
+    // Unified function for Admin Request
+    window.applyForAdmin = async function() {
       try {
         await updateDoc(doc(db, "users", currentUser), { requestAdmin: true });
         showToast("Admin request sent!", "success");
-        document.getElementById('btn-apply-admin').innerText = "Request Pending...";
-        document.getElementById('btn-apply-admin').disabled = true;
+        
+        // Update header button
+        const navBtn = document.getElementById('btn-request-nav');
+        if(navBtn) { navBtn.innerText = "Pending..."; navBtn.disabled = true; }
+        
+        // Update modal button
+        const modalBtn = document.getElementById('btn-apply-admin');
+        if(modalBtn) { modalBtn.innerText = "Request Pending..."; modalBtn.disabled = true; }
       } catch (e) { showToast("Failed to send request.", "error"); }
-    });
+    };
+
+    document.getElementById('btn-apply-admin').addEventListener('click', window.applyForAdmin);
 
     async function loadMembers(showAll) {
       const container = document.getElementById('members-list'); 
@@ -234,6 +335,8 @@
     async function loadCategories() {
       try {
         const filter = document.getElementById('category-filter');
+        // Prevent duplicate loads
+        filter.innerHTML = '<option value="All">🌟 All Categories</option>';
         const snap = await getDocs(collection(db, "categories"));
         snap.forEach(doc => { filter.innerHTML += `<option value="${doc.id}">📁 ${doc.id}</option>`; });
       } catch (e) {}
@@ -287,7 +390,7 @@
         <article class="post-card">
           <div class="post-header-sec">
             <div style="display:flex; gap:10px; align-items: flex-start;">
-              <div class="user-avatar" style="width:36px; height:36px; font-size:14px;" onclick="window.location.href='profile.html?user=${post.uploaderName}'" style="cursor:pointer;">${post.uploaderName.charAt(0).toUpperCase()}</div>
+              <div class="user-avatar" style="width:36px; height:36px; font-size:14px; cursor:pointer;" onclick="window.location.href='profile.html?user=${post.uploaderName}'">${post.uploaderName.charAt(0).toUpperCase()}</div>
               <div>
                 <span class="category-tag">${post.category || 'General'}</span>
                 <h2 class="post-heading">${post.heading}</h2>
