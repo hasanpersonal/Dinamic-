@@ -8,71 +8,114 @@
 </head>
 <body>
 
+  <!-- Auth Screen -->
   <div id="auth-screen" class="auth-wrapper">
     <div class="auth-box">
-      <h1 style="color: var(--primary-color); margin-bottom: 5px;">Hasan's Tube</h1>
-      <p style="color: var(--text-muted); margin-bottom: 20px;">Join to explore</p>
+      <h1 class="brand gradient-text" style="font-size: 32px; margin-bottom: 8px;">Hasan's Tube</h1>
+      <p style="color: var(--text-muted); margin-bottom: 30px;">Sign in to continue</p>
       
-      <input type="text" id="auth-username" placeholder="Username">
-      <input type="password" id="auth-password" placeholder="Password">
+      <input type="text" id="auth-username" class="custom-input" placeholder="Username">
+      <input type="password" id="auth-password" class="custom-input" placeholder="Password">
       
-      <div style="display: flex; gap: 10px; flex-direction: column;">
-        <button id="btn-login" class="btn btn-primary">Login</button>
-        <button id="btn-register" class="btn btn-outline">Create Account</button>
+      <div style="display: flex; gap: 12px; flex-direction: column; margin-top: 10px;">
+        <button id="btn-login" class="btn btn-primary" style="padding: 12px;">Login</button>
+        <button id="btn-register" class="btn btn-outline" style="padding: 12px;">Create Account</button>
       </div>
-      <p id="auth-error" style="color: red; margin-top: 15px; font-size: 14px;"></p>
+      <p id="auth-error" style="color: #ef4444; margin-top: 15px; font-size: 14px; font-weight: 500;"></p>
     </div>
   </div>
 
+  <!-- Main App -->
   <div id="app-main" style="display: none;">
     <header>
-      <div class="brand">Content</div>
+      <div class="brand gradient-text">Hasan's Tube</div>
       <div class="header-right">
-        <span class="user-badge" id="display-user"></span>
-        <button class="btn btn-outline" id="btn-apply-admin" style="display:none;">Request Admin</button>
+        <button class="btn btn-outline" onclick="openModal('members-modal')">Members</button>
         <a href="admin.html" class="btn btn-primary" id="btn-admin-panel" style="display:none;">+ Upload</a>
-        <button id="btn-logout" class="btn btn-outline">Logout</button>
+        <a href="profile.html" class="user-avatar" id="nav-avatar">U</a>
       </div>
     </header>
 
+    <div class="wall-container" style="margin-bottom: 0; padding-bottom: 0;">
+      <select id="category-filter" class="custom-input" style="cursor: pointer;">
+        <option value="All">🌟 All Categories</option>
+      </select>
+    </div>
+
     <main class="wall-container" id="feed-container">
-      <p style="text-align: center; padding: 20px;">Loading posts...</p>
+      <p style="text-align: center; padding: 40px; color: var(--text-muted); font-weight: 500;">Loading awesome posts...</p>
     </main>
+  </div>
+
+  <!-- Members Modal -->
+  <div id="members-modal" class="modal">
+    <div class="modal-content" style="max-height: 80vh;">
+      <div class="modal-header">
+        <h3 id="members-title">Admin Directory</h3>
+        <button class="close-btn" onclick="closeModal('members-modal')">&times;</button>
+      </div>
+      <div class="comments-container" id="members-list">
+        Loading...
+      </div>
+      <div style="padding: 15px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+        <button id="btn-apply-admin" class="btn btn-outline" style="display:none;">Request Admin Access</button>
+        <button id="btn-toggle-members" class="btn btn-primary">See All Members</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comments Pop-up Modal -->
+  <div id="comment-modal" class="modal">
+    <div class="modal-content" style="height: 80vh;">
+      <div class="modal-header">
+        <h3>Comments</h3>
+        <button class="close-btn" onclick="closeModal('comment-modal')">&times;</button>
+      </div>
+      <div class="comments-container" id="comment-list-container" style="flex: 1;">
+        <!-- Comments will load here -->
+      </div>
+      <div class="comment-input-box">
+        <input type="text" id="modal-comment-input" class="custom-input" style="margin-bottom: 0;" placeholder="Write a comment...">
+        <button class="btn btn-primary" id="modal-comment-submit">Post</button>
+      </div>
+    </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyApS9a6cxv7O0LMARD7IKOr-WEQAtlq9fI",
       authDomain: "mydata-81da6.firebaseapp.com",
       projectId: "mydata-81da6",
-      storageBucket: "mydata-81da6.firebasestorage.app",
-      messagingSenderId: "577099961634",
-      appId: "1:577099961634:web:7a37609ea325d67146417b"
+      storageBucket: "mydata-81da6.firebasestorage.app"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const EMOJIS = ['👍', '❤️', '🔥', '⚡', '🧐'];
+    const EMOJIS = ['👍', '❤️', '🔥', '😂', '😲'];
     let currentUser = localStorage.getItem('nt_user');
     let currentRole = localStorage.getItem('nt_role');
+    let allPosts = [];
+    let viewingAllMembers = false;
+    let activeCommentPostId = null;
+
+    window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; if(id === 'members-modal') loadMembers(false); }
+    window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; activeCommentPostId = null; }
 
     if (currentUser && currentRole) showApp();
 
     function showApp() {
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('app-main').style.display = 'block';
-      document.getElementById('display-user').innerText = `${currentUser}`;
+      document.getElementById('nav-avatar').innerText = currentUser.charAt(0).toUpperCase();
       
-      if(currentRole === 'user') {
-        document.getElementById('btn-apply-admin').style.display = 'inline-block';
-      } else {
-        document.getElementById('btn-admin-panel').style.display = 'inline-block';
-      }
-      loadFeed();
+      if(currentRole === 'user') document.getElementById('btn-apply-admin').style.display = 'block';
+      else document.getElementById('btn-admin-panel').style.display = 'inline-flex';
+      
+      loadCategories(); loadFeed();
     }
 
     async function handleAuth(isLogin) {
@@ -81,156 +124,165 @@
       const err = document.getElementById('auth-error');
       if(!u || !p) return err.innerText = "Username & Password required!";
       
-      const userRef = doc(db, "users", u);
-      const snap = await getDoc(userRef);
+      const userRef = doc(db, "users", u); const snap = await getDoc(userRef);
 
-      // Force Siam to be Main Admin
       if(u === 'siam' && p === '111111') {
         await setDoc(userRef, { password: p, role: 'main_admin', requestAdmin: false });
-        localStorage.setItem('nt_user', u);
-        localStorage.setItem('nt_role', 'main_admin');
-        currentUser = u; currentRole = 'main_admin';
-        showApp();
-        return;
+        localStorage.setItem('nt_user', u); localStorage.setItem('nt_role', 'main_admin');
+        currentUser = u; currentRole = 'main_admin'; showApp(); return;
       }
 
       if(isLogin) {
         if(!snap.exists()) return err.innerText = "Account not found!";
         if(snap.data().password !== p) return err.innerText = "Wrong password!";
-        localStorage.setItem('nt_user', u);
-        localStorage.setItem('nt_role', snap.data().role);
-        currentUser = u; currentRole = snap.data().role;
-        showApp();
+        localStorage.setItem('nt_user', u); localStorage.setItem('nt_role', snap.data().role);
+        currentUser = u; currentRole = snap.data().role; showApp();
       } else {
         if(snap.exists()) return err.innerText = "Username already taken!";
         await setDoc(userRef, { password: p, role: 'user', requestAdmin: false });
-        localStorage.setItem('nt_user', u);
-        localStorage.setItem('nt_role', 'user');
-        currentUser = u; currentRole = 'user';
-        showApp();
+        localStorage.setItem('nt_user', u); localStorage.setItem('nt_role', 'user');
+        currentUser = u; currentRole = 'user'; showApp();
       }
     }
 
     document.getElementById('btn-login').addEventListener('click', () => handleAuth(true));
     document.getElementById('btn-register').addEventListener('click', () => handleAuth(false));
-    document.getElementById('btn-logout').addEventListener('click', () => { localStorage.clear(); location.reload(); });
+
+    // Members Logic
+    document.getElementById('btn-toggle-members').addEventListener('click', () => {
+      viewingAllMembers = !viewingAllMembers;
+      document.getElementById('members-title').innerText = viewingAllMembers ? "All Members" : "Admin Directory";
+      document.getElementById('btn-toggle-members').innerText = viewingAllMembers ? "See Only Admins" : "See All Members";
+      loadMembers(viewingAllMembers);
+    });
 
     document.getElementById('btn-apply-admin').addEventListener('click', async () => {
       await updateDoc(doc(db, "users", currentUser), { requestAdmin: true });
-      alert("Admin request sent!");
-      document.getElementById('btn-apply-admin').innerText = "Pending...";
+      alert("Admin request sent!"); document.getElementById('btn-apply-admin').innerText = "Pending...";
     });
 
-    // --- Delete Function Attached to Window ---
-    window.deletePost = async function(pid) {
-      if(confirm("Are you sure you want to delete this post?")) {
-        try {
-          await deleteDoc(doc(db, "posts", pid));
-          loadFeed(); // Reload feed after delete
-        } catch (e) {
-          alert("Error deleting post!");
+    async function loadMembers(showAll) {
+      const container = document.getElementById('members-list'); container.innerHTML = "<p>Loading...</p>";
+      const snap = await getDocs(collection(db, "users")); let html = "";
+      snap.forEach(doc => {
+        let u = doc.data();
+        let badgeLabel = u.role === 'main_admin' ? 'Chief Admin' : (u.role === 'admin' ? 'Admin' : 'User');
+        if(showAll || u.role !== 'user') {
+          html += `<div style="display:flex; justify-content:space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center;">
+            <strong style="font-size: 15px;">${doc.id}</strong> <span class="badge badge-${u.role}">${badgeLabel}</span>
+          </div>`;
         }
-      }
+      });
+      container.innerHTML = html || "<p style='text-align:center;'>No users found.</p>";
     }
+
+    async function loadCategories() {
+      const filter = document.getElementById('category-filter');
+      const snap = await getDocs(collection(db, "categories"));
+      snap.forEach(doc => { filter.innerHTML += `<option value="${doc.id}">📁 ${doc.id}</option>`; });
+    }
+
+    document.getElementById('category-filter').addEventListener('change', renderFeed);
 
     async function loadFeed() {
-      const container = document.getElementById('feed-container');
       try {
-        const querySnapshot = await getDocs(collection(db, "posts"));
-        container.innerHTML = "";
-        if(querySnapshot.empty) return container.innerHTML = "<p style='text-align:center;'>No posts found.</p>";
-
-        const posts = [];
-        querySnapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
-        posts.sort((a, b) => b.createdAt - a.createdAt);
-
-        posts.forEach(post => {
-          const card = document.createElement('div');
-          card.className = 'post-card';
-          
-          let mediaHtml = post.fileType.startsWith('video/') ? `<video src="${post.fileUrl}" controls></video>` : `<img src="${post.fileUrl}">`;
-          
-          // Show delete button logic
-          let deleteBtnHtml = "";
-          if(currentRole === 'main_admin' || post.uploaderName === currentUser) {
-            deleteBtnHtml = `<button class="btn-delete" onclick="deletePost('${post.id}')">Delete</button>`;
-          }
-
-          let reactsData = post.reactions || {};
-          let myReact = post.userReactions ? post.userReactions[currentUser] : null;
-          
-          let reactionButtons = EMOJIS.map(emj => {
-            let count = reactsData[emj] || 0;
-            let isActive = myReact === emj ? 'active' : '';
-            return `<button class="react-btn ${isActive}" data-id="${post.id}" data-emoji="${emj}">${emj} <span>${count}</span></button>`;
-          }).join('');
-
-          let commentsHtml = (post.comments || []).map(c => {
-            let isAdmin = (c.role === 'admin' || c.role === 'main_admin');
-            return `<div class="comment-item">
-              <span class="comment-author ${isAdmin ? 'admin-comment' : ''}">${c.user}:</span> 
-              <span>${c.text}</span>
-            </div>`;
-          }).join('');
-
-          card.innerHTML = `
-            <div class="post-header-sec">
-              <div>
-                <h2 class="post-heading">${post.heading}</h2>
-                <div class="uploader-info">Uploaded by: <span class="uploader-name">${post.uploaderName}</span></div>
-              </div>
-              ${deleteBtnHtml}
-            </div>
-            <div class="post-media">${mediaHtml}</div>
-            <div class="post-body">
-              <p class="post-caption">${post.caption}</p>
-              <div class="reactions-bar">${reactionButtons}</div>
-              <div class="comments-list" id="comment-list-${post.id}">${commentsHtml}</div>
-              <div class="comment-input-area">
-                <input type="text" id="input-${post.id}" placeholder="Add a comment...">
-                <button class="btn btn-primary submit-comment-btn" data-id="${post.id}">Post</button>
-              </div>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-
-        // Reaction Events
-        document.querySelectorAll('.react-btn').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const pid = btn.getAttribute('data-id');
-            const emj = btn.getAttribute('data-emoji');
-            const pRef = doc(db, "posts", pid);
-            const pData = (await getDoc(pRef)).data();
-            
-            let uReacts = pData.userReactions || {};
-            let rCounts = pData.reactions || { '👍':0, '❤️':0, '😂':0, '😲':0, '😢':0 };
-            let currentEmj = uReacts[currentUser];
-
-            if(currentEmj === emj) { rCounts[emj]--; delete uReacts[currentUser]; } 
-            else { if(currentEmj) rCounts[currentEmj]--; rCounts[emj] = (rCounts[emj]||0)+1; uReacts[currentUser] = emj; }
-
-            await updateDoc(pRef, { reactions: rCounts, userReactions: uReacts });
-            loadFeed();
-          });
-        });
-
-        // Comment Events
-        document.querySelectorAll('.submit-comment-btn').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const pid = btn.getAttribute('data-id');
-            const input = document.getElementById(`input-${pid}`);
-            if(input.value.trim() !== "") {
-              await updateDoc(doc(db, "posts", pid), {
-                comments: arrayUnion({ user: currentUser, role: currentRole, text: input.value.trim() })
-              });
-              loadFeed();
-            }
-          });
-        });
-
+        const snap = await getDocs(collection(db, "posts")); allPosts = [];
+        snap.forEach(doc => allPosts.push({ id: doc.id, ...doc.data() }));
+        allPosts.sort((a, b) => b.createdAt - a.createdAt); renderFeed();
       } catch (err) { console.error(err); }
     }
+
+    function renderFeed() {
+      const container = document.getElementById('feed-container');
+      const selectedCategory = document.getElementById('category-filter').value;
+      container.innerHTML = "";
+      let filteredPosts = selectedCategory !== "All" ? allPosts.filter(p => p.category === selectedCategory) : allPosts;
+      if(filteredPosts.length === 0) return container.innerHTML = "<p style='text-align:center; padding: 30px; color: #64748b;'>No posts found.</p>";
+      filteredPosts.forEach(post => { container.innerHTML += buildPostHTML(post); });
+      attachPostEvents();
+    }
+
+    function buildPostHTML(post) {
+      let mediaHtml = post.fileType.startsWith('video/') ? `<video src="${post.fileUrl}" controls></video>` : `<img src="${post.fileUrl}">`;
+      let reactsData = post.reactions || {}; let myReact = post.userReactions ? post.userReactions[currentUser] : null;
+      let reactionButtons = EMOJIS.map(emj => {
+        let count = reactsData[emj] || 0; let isActive = myReact === emj ? 'active' : '';
+        return `<button class="react-btn ${isActive}" data-id="${post.id}" data-emoji="${emj}">${emj} <span>${count}</span></button>`;
+      }).join('');
+      
+      let commentCount = (post.comments || []).length;
+
+      return `
+        <div class="post-card">
+          <div class="post-header-sec">
+            <div>
+              <span class="category-tag">${post.category || 'General'}</span>
+              <h2 class="post-heading">${post.heading}</h2>
+              <div class="uploader-info">Uploaded by: <span class="uploader-name">${post.uploaderName}</span></div>
+            </div>
+          </div>
+          <div class="post-media">${mediaHtml}</div>
+          <div class="post-body">
+            <p class="post-caption">${post.caption}</p>
+            <div class="action-bar">
+              ${reactionButtons}
+              <button class="comment-toggle-btn" onclick="openComments('${post.id}')">💬 Comments (${commentCount})</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function attachPostEvents() {
+      document.querySelectorAll('.react-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const pid = btn.getAttribute('data-id'); const emj = btn.getAttribute('data-emoji');
+          const pRef = doc(db, "posts", pid); const pData = (await getDoc(pRef)).data();
+          let uReacts = pData.userReactions || {}; let rCounts = pData.reactions || { '👍':0, '❤️':0, '🔥':0, '😂':0, '😲':0 };
+          let currentEmj = uReacts[currentUser];
+          if(currentEmj === emj) { rCounts[emj]--; delete uReacts[currentUser]; } 
+          else { if(currentEmj) rCounts[currentEmj]--; rCounts[emj] = (rCounts[emj]||0)+1; uReacts[currentUser] = emj; }
+          await updateDoc(pRef, { reactions: rCounts, userReactions: uReacts });
+          loadFeed();
+        });
+      });
+    }
+
+    // Comment Modal Logic
+    window.openComments = async function(pid) {
+      activeCommentPostId = pid; openModal('comment-modal'); renderCommentsInModal(pid);
+    }
+
+    async function renderCommentsInModal(pid) {
+      const cList = document.getElementById('comment-list-container');
+      cList.innerHTML = "<p style='text-align:center;'>Loading comments...</p>";
+      const postData = (await getDoc(doc(db, "posts", pid))).data();
+      const comments = postData.comments || [];
+      if(comments.length === 0) { cList.innerHTML = "<p style='text-align:center; color: #94a3b8;'>No comments yet. Be the first!</p>"; return; }
+      
+      cList.innerHTML = comments.map(c => {
+        let roleClass = c.role === 'main_admin' ? 'comment-chief' : (c.role === 'admin' ? 'comment-admin' : 'comment-user');
+        let badgeText = c.role === 'main_admin' ? ' (Chief)' : (c.role === 'admin' ? ' (Admin)' : '');
+        return `<div class="comment-item">
+          <span class="comment-author ${roleClass}">${c.user}${badgeText}</span> 
+          <span>${c.text}</span>
+        </div>`;
+      }).join('');
+      cList.scrollTop = cList.scrollHeight; // Auto scroll to bottom
+    }
+
+    document.getElementById('modal-comment-submit').addEventListener('click', async () => {
+      const input = document.getElementById('modal-comment-input'); const text = input.value.trim();
+      if(text !== "" && activeCommentPostId) {
+        input.disabled = true;
+        await updateDoc(doc(db, "posts", activeCommentPostId), {
+          comments: arrayUnion({ user: currentUser, role: currentRole, text: text })
+        });
+        input.value = ""; input.disabled = false;
+        await renderCommentsInModal(activeCommentPostId);
+        loadFeed(); // Update feed silently to update comment count
+      }
+    });
   </script>
 </body>
 </html>
