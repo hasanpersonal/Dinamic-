@@ -47,7 +47,7 @@ header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); bord
 .uploader-name { color: var(--primary-color); font-weight: 700; }
 
 .post-media { width: 100%; background: #000; }
-.post-media img, .post-media video { width: 100%; aspect-ratio: 4 / 6; object-fit: cover; display: block; }
+.post-media img, .post-media video { width: 100%; height: auto; object-fit: cover; display: block; }
 .post-body { padding: 14px; }
 .post-caption { font-size: 13px; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap;}
 
