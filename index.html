@@ -210,7 +210,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const EMOJIS = ['👍', '❤️', '🔥', '😂', '😲'];
+    const EMOJIS = ['👍', '❤️', '🔥', '💀'];
     let currentUser = localStorage.getItem('nt_user');
     let currentRole = localStorage.getItem('nt_role');
     let allPosts = [];
@@ -422,7 +422,7 @@
           try {
             const pid = btn.getAttribute('data-id'); const emj = btn.getAttribute('data-emoji');
             const pRef = doc(db, "posts", pid); const pData = (await getDoc(pRef)).data();
-            let uReacts = pData.userReactions || {}; let rCounts = pData.reactions || { '👍':0, '❤️':0, '🔥':0, '😂':0, '😲':0 };
+            let uReacts = pData.userReactions || {}; let rCounts = pData.reactions || { '👍':0, '❤️':0, '🔥':0, '💀':0 };
             let currentEmj = uReacts[currentUser];
             if(currentEmj === emj) { rCounts[emj]--; delete uReacts[currentUser]; } 
             else { if(currentEmj) rCounts[currentEmj]--; rCounts[emj] = (rCounts[emj]||0)+1; uReacts[currentUser] = emj; }
