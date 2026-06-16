@@ -80,7 +80,7 @@
             Click to browse files
             <input type="file" id="file-input" accept="image/*,video/*" style="display: none;" required>
           </label>
-          <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;" id="file-name-display">Supported: Standard images & videos (4:6 optimal)</p>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;" id="file-name-display">Supported: Standard images & videos (Auto adjustable size)</p>
         </div>
         
         <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; display: block;">Rich Caption</label>
@@ -277,7 +277,7 @@
 
         showToast("Payload successfully deployed to global feed!", "success");
         document.getElementById('upload-form').reset();
-        document.getElementById('file-name-display').innerHTML = "Supported: Standard images & videos";
+        document.getElementById('file-name-display').innerHTML = "Supported: Standard images & videos (Auto adjustable size)";
         document.getElementById('drop-zone').style.borderColor = "#cbd5e1";
         document.getElementById('drop-zone').style.backgroundColor = "#f8fafc";
         
